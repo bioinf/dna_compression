@@ -1,17 +1,22 @@
 from Huffman3 import *
+
 import sys
 import os
+
+###################### Parameters ###########################
+cond_huffman = True
+
+#############################################################
 
 if len(sys.argv) < 2:
     print "Using: " + sys.argv[0] + " file.fastq"
     exit()
 
-
 filename = sys.argv[1]
 path, file = os.path.dirname(filename), os.path.basename(filename)
 path += '/'
 print "Processing: " + path + file
-
+print "File size: " + str(os.path.getsize(filename)) + " bytes"
 
 print "Generating out and out_2"
 f = open(filename, 'r')
@@ -23,7 +28,7 @@ line = f.readline()
 num_reads = 0
 while line:
     line = f.readline()
-    n = len(line.replace('\n', ''))
+    lng = len(line.replace('\n', ''))
     out.write(line)
     out2.write(line.replace('\n', ''))
     line = f.readline()
@@ -36,15 +41,14 @@ f.close()
 out.close()
 out2.close()
 
-
-print "Generating out[0.." + str(n - 1) + ']'
+print "Generating out[0.." + str(lng - 1) + ']'
 f = open(path + 'out', 'r')
 out = []
-for i in range(n):
+for i in range(lng):
     out.append(open(path + 'out' + str(i), 'w'))
 
 for line in f.readlines():
-    for i in range(n):
+    for i in range(lng):
         out[i].write(line[i])
         
 for ff in out:
@@ -53,10 +57,8 @@ for ff in out:
 f.close()
 
 
-
-print "Building trees..."
-
-lng = n
+print "Counting frequences..."
+print "Positions: ", 
 
 freq = [{} for i in range(lng)]
 cond_freq = [{} for i in range(lng)]
@@ -83,7 +85,7 @@ while c1:
 f1.close()
     
 for i in range(lng - 1):
-    print i
+    print i,
     f1 = open(path + 'out' + str(i), 'r')
     f2 = open(path + 'out' + str(i + 1), 'r')
 
@@ -114,9 +116,13 @@ for i in range(len(freq)):
     for sym in freq[i]:
         freq[i][sym] /= summ
 
+
+print "Building trees..."
+alph_card = 0
 symbols = [0 for i in range(lng)]
 for i in range(lng):
     pairs = [ (sym, freq[i][sym]) for sym in freq[i] ]
+    alph_card = max(alph_card, len(pairs))
     symbols[i] = makenodes(pairs)
     iterate(symbols[i])
 
@@ -128,26 +134,42 @@ for i in range(lng - 1):
         pairs = [ (sym, cf[sym]) for sym in cf ]
         cond_symbols[i][c] = makenodes(pairs)
         iterate(cond_symbols[i][c])
-               
 
+
+print "\nSqueezing..."
 f = open(path + 'out_2', 'r')
+
 
 summ = 0
 count = 0
+count_step = int(num_reads / 100.0) + 1
 cur = f.read(1)
 while cur:
-    if count % 1000 == 0:
-        print count/float(num_reads)
+    if count % count_step == 0:
+        print str(count / count_step) + "% ",
     count += 1
     
     summ += len(encode(cur, symbols[0]))
     for i in range(lng - 1):
         prev = cur
         cur = f.read(1)
-        summ += len(encode(cur, cond_symbols[i][prev]))
-        #summ += len(encode(cur, symbols[i + 1]))
+        if cond_huffman:
+            summ += len(encode(cur, cond_symbols[i][prev]))
+        else:
+            summ += len(encode(cur, symbols[i + 1]))
         
     cur = f.read(1)
 
 f.close()
-print "Squeezed to: " + str(summ + num_reads * n / 4) + " bytes"
+
+
+quality_bytes = summ
+header_bytes = lng * alph_card**2 if cond_huffman else lng * alph_card
+nucl_bytes = (num_reads * lng) / 4
+info_bytes = 0    ## TBD
+print "\nSqueezed to: " + str(quality_bytes + 
+                              nucl_bytes + 
+                              header_bytes +
+                              info_bytes) + " bytes"
+
+print "Caution: reads info lost!"

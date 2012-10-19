@@ -1,8 +1,8 @@
 
 Put your *.fastq file to data directory
-and use my.py script to split and squeeze it:
+and use compress.py script to split and squeeze it:
 
   $ mv /tmp/ERR001268.filt.fastq ../data/
-  $ python my.py ../data/ERR001268.filt.fastq
+  $ python compress.py ../data/ERR001268.filt.fastq
 
 All temporary files will be created in ../data/ 

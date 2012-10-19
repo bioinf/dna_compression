@@ -20,6 +20,7 @@ out2 = open(path + 'out_2', 'w')
 line = f.readline()
 line = f.readline()
 line = f.readline()
+num_reads = 0
 while line:
     line = f.readline()
     n = len(line.replace('\n', ''))
@@ -28,6 +29,7 @@ while line:
     line = f.readline()
     line = f.readline()
     line = f.readline()
+    num_reads += 1
 
 
 f.close()
@@ -135,7 +137,7 @@ count = 0
 cur = f.read(1)
 while cur:
     if count % 1000 == 0:
-        print count
+        print count/float(num_reads)
     count += 1
     
     summ += len(encode(cur, symbols[0]))
@@ -148,4 +150,4 @@ while cur:
     cur = f.read(1)
 
 f.close()
-print summ
+print "Squeezed to: " + str(summ + num_reads * n / 4) + " bytes"

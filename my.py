@@ -1,8 +1,60 @@
 from Huffman3 import *
+import sys
+import os
 
-path = '../data/'
+if len(sys.argv) < 2:
+    print "Using: " + sys.argv[0] + " file.fastq"
+    exit()
 
-lng = 36
+
+filename = sys.argv[1]
+path, file = os.path.dirname(filename), os.path.basename(filename)
+path += '/'
+print "Processing: " + path + file
+
+
+print "Generating out and out_2"
+f = open(filename, 'r')
+out = open(path + 'out', 'w')
+out2 = open(path + 'out_2', 'w')
+line = f.readline()
+line = f.readline()
+line = f.readline()
+while line:
+    line = f.readline()
+    n = len(line.replace('\n', ''))
+    out.write(line)
+    out2.write(line.replace('\n', ''))
+    line = f.readline()
+    line = f.readline()
+    line = f.readline()
+
+
+f.close()
+out.close()
+out2.close()
+
+
+print "Generating out[0.." + str(n - 1) + ']'
+f = open(path + 'out', 'r')
+out = []
+for i in range(n):
+    out.append(open(path + 'out' + str(i), 'w'))
+
+for line in f.readlines():
+    for i in range(n):
+        out[i].write(line[i])
+        
+for ff in out:
+    ff.close()
+
+f.close()
+
+
+
+print "Building trees..."
+
+lng = n
 
 freq = [{} for i in range(lng)]
 cond_freq = [{} for i in range(lng)]
@@ -90,8 +142,8 @@ while cur:
     for i in range(lng - 1):
         prev = cur
         cur = f.read(1)
-        #summ += len(encode(cur, cond_symbols[i][prev]))
-        summ += len(encode(cur, symbols[i + 1]))
+        summ += len(encode(cur, cond_symbols[i][prev]))
+        #summ += len(encode(cur, symbols[i + 1]))
         
     cur = f.read(1)
 

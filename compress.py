@@ -1,3 +1,4 @@
+
 from Huffman3 import *
 
 import sys
@@ -117,7 +118,7 @@ for i in range(len(freq)):
         freq[i][sym] /= summ
 
 
-print "Building trees..."
+print "\nBuilding trees..."
 alph_card = 0
 symbols = [0 for i in range(lng)]
 for i in range(lng):
@@ -163,7 +164,7 @@ while cur:
 f.close()
 
 
-quality_bytes = summ
+quality_bytes = summ / 8
 header_bytes = lng * alph_card**2 if cond_huffman else lng * alph_card
 nucl_bytes = (num_reads * lng) / 4
 info_bytes = 0    ## TBD

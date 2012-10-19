@@ -1,6 +1,6 @@
 from Huffman3 import *
 
-path = 'C:\\Users\\aafanasi\\Desktop\\dna_comp_data\\'
+path = '../data/'
 
 lng = 36
 

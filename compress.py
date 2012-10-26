@@ -165,7 +165,7 @@ f.close()
 
 
 quality_bytes = summ / 8
-header_bytes = lng * alph_card**2 if cond_huffman else lng * alph_card
+header_bytes = 2*(lng * alph_card**2 if cond_huffman else lng * alph_card)
 nucl_bytes = (num_reads * lng) / 4
 info_bytes = 0    ## TBD
 print "\nSqueezed to: " + str(quality_bytes + 

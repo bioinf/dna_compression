@@ -17,4 +17,4 @@ for filename in open('test.lst').readlines():
 
     if (not quick) or quick2 == 'True': 
         print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-        compress(filename, [bool(cond_huffman)])
+        compress(filename, [cond_huffman == 'True'])

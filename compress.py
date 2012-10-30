@@ -1,4 +1,4 @@
-
+#!/usr/bin/python
 from Huffman3 import *
 
 import sys

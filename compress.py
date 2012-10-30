@@ -138,7 +138,9 @@ def squeeze(path, num_reads, lng, symbols, cond_symbols, cond_huffman):
     return summ
 
 
-def compress(filename, cond_huffman):
+def compress(filename, parameters):
+    cond_huffman = parameters[0]
+
     path, file = os.path.dirname(filename), os.path.basename(filename)
     path += '/'
 
@@ -162,6 +164,8 @@ if __name__ == '__main__':
 
     ###################### Parameters ###########################
     cond_huffman = True
+    
+    parameters = [cond_huffman]
     #############################################################
 
     if len(sys.argv) < 2:
@@ -171,4 +175,4 @@ if __name__ == '__main__':
     filename = sys.argv[1]
 
 
-    compress(filename, cond_huffman)
+    compress(filename, parameters)

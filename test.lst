@@ -1,3 +1,5 @@
 ## Filename                       Quick flag                        cond_huffman
 ../data/tmp2.tmp                  True                              True 
+../data/tmp2.tmp                  True                              False
+../data/tmp.tmp                   True                              False  
 ../data/ERR001268.filt.fastq      False                             True 

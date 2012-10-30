@@ -8,7 +8,7 @@ import os
 
 
 def analyze(filename, path):
-    print "Processing: " + path + filename
+    print "Processing: " + filename
     print "File size: " + str(os.path.getsize(filename)) + " bytes"
 
     print "Generating out_1, out_2 and out_3"
@@ -34,11 +34,9 @@ def analyze(filename, path):
     out2.close()
     out3.close()
 
-
-
     print "Counting frequences..."
     widgets = [Bar('#'), ' ', ETA()]
-    pbar = ProgressBar(widgets=widgets, maxval = num_reads).start()
+    pbar = ProgressBar(widgets = widgets, maxval = num_reads).start()
     count = 0
 
     freq = [{} for i in range(lng)]
@@ -85,7 +83,7 @@ def analyze(filename, path):
             freq[i][sym] /= summ
 
 
-    print "\nBuilding trees..."
+    print "Building trees..."
     alph_card = 0
     symbols = [0 for i in range(lng)]
     for i in range(lng):
@@ -94,21 +92,42 @@ def analyze(filename, path):
         symbols[i] = makenodes(pairs)
         iterate(symbols[i])
 
+    widgets = [Bar('#'), ' ', ETA()]
+    pbar = ProgressBar(widgets = widgets, maxval = lng - 2).start()
     cond_symbols = []
     for i in range(lng - 1):
+        pbar.update(i)
         cond_symbols.append({})
         for c in cond_freq[i]:
             cf = cond_freq[i][c]
             pairs = [ (sym, cf[sym]) for sym in cf ]
             cond_symbols[i][c] = makenodes(pairs)
             iterate(cond_symbols[i][c])
-    
+    pbar.finish()
+
+    print "Building tables..."
+    table = [{} for i in range(lng)]
+    for i in range(lng):
+        for c in freq[i]:
+            table[i][c] = encode(c, symbols[i])
+
+    widgets = [Bar('#'), ' ', ETA()]
+    pbar = ProgressBar(widgets = widgets, maxval = lng - 2).start()
+    cond_table = [{} for i in range(lng - 1)]
+    for i in range(lng - 1):
+        pbar.update(i)
+        for c1 in cond_freq[i]:
+            cond_table[i][c1] = {}
+            for c2 in cond_freq[i][c1]:
+                cond_table[i][c1][c2] = encode(c2, cond_symbols[i][c1])
+    pbar.finish()
+
     return num_reads, lng, alph_card, symbols, cond_symbols
 
 
 
 def squeeze(path, num_reads, lng, symbols, cond_symbols, cond_huffman):
-    print "\nSqueezing..."
+    print "Squeezing..."
 
     widgets = [Bar('#'), ' ', ETA()]
     pbar = ProgressBar(widgets = widgets, maxval = num_reads).start()
@@ -151,7 +170,7 @@ def compress(filename, parameters):
     header_bytes = 2*(lng * alph_card**2 if cond_huffman else lng * alph_card)
     nucl_bytes = (num_reads * lng) / 4
     info_bytes = 0
-    print "\nSqueezed to: " + str(quality_bytes + 
+    print "Squeezed to: " + str(quality_bytes + 
                                   nucl_bytes + 
                                   header_bytes +
                                   info_bytes) + " bytes"

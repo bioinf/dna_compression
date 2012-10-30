@@ -1,25 +1,14 @@
 #!/usr/bin/python
+
 from Huffman3 import *
+from progressbar import *
 
 import sys
 import os
 
-###################### Parameters ###########################
-cond_huffman = True
-
-#############################################################
-
-if len(sys.argv) < 2:
-    print "Using: " + sys.argv[0] + " file.fastq"
-    exit()
-
-filename = sys.argv[1]
-path, file = os.path.dirname(filename), os.path.basename(filename)
-path += '/'
-
 
 def analyze(filename, path):
-    print "Processing: " + path + file
+    print "Processing: " + path + filename
     print "File size: " + str(os.path.getsize(filename)) + " bytes"
 
     print "Generating out_1, out_2 and out_3"
@@ -48,7 +37,9 @@ def analyze(filename, path):
 
 
     print "Counting frequences..."
-    print "Positions: ", 
+    widgets = [Bar('#'), ' ', ETA()]
+    pbar = ProgressBar(widgets=widgets, maxval = num_reads).start()
+    count = 0
 
     freq = [{} for i in range(lng)]
     cond_freq = [{} for i in range(lng)]
@@ -56,6 +47,8 @@ def analyze(filename, path):
     out3 = open(path + 'out_3', 'r')
     line = out3.readline()
     while line:
+        count += 1
+
         c = line[lng - 1]
         if not freq[lng - 1].has_key(c): freq[lng - 1][c] = 0
         freq[lng - 1][c] += 1
@@ -75,6 +68,9 @@ def analyze(filename, path):
             cond_freq[i][c1][c2] += 1
 
         line = out3.readline()            
+        pbar.update(count)
+
+    pbar.finish()
     out3.close()
     
 
@@ -111,17 +107,18 @@ def analyze(filename, path):
 
 
 
-def squeeze(path, num_reads, symbols, cond_symbols):
+def squeeze(path, num_reads, lng, symbols, cond_symbols, cond_huffman):
     print "\nSqueezing..."
 
+    widgets = [Bar('#'), ' ', ETA()]
+    pbar = ProgressBar(widgets = widgets, maxval = num_reads).start()
+
     summ = 0; count = 0
-    count_step = int(num_reads / 100.0) + 1
     f = open(path + 'out_3', 'r')
     line = f.readline()
     while line:
-        if count % count_step == 0:
-            print str(count / count_step) + "% ",
         count += 1
+        pbar.update(count)
 
         cur = line[0]
         summ += len(encode(cur, symbols[0]))
@@ -135,23 +132,43 @@ def squeeze(path, num_reads, symbols, cond_symbols):
             
         line = f.readline()
 
+    pbar.finish()
     f.close()
     
     return summ
 
 
-num_reads, lng, alph_card, symbols, cond_symbols = analyze(filename, path)
-summ = squeeze(path, num_reads, symbols, cond_symbols)
+def compress(filename, cond_huffman):
+    path, file = os.path.dirname(filename), os.path.basename(filename)
+    path += '/'
+
+    num_reads, lng, alph_card, symbols, cond_symbols = analyze(filename, path)
+    summ = squeeze(path, num_reads, lng, symbols, cond_symbols, cond_huffman)
+
+    quality_bytes = summ / 8
+    header_bytes = 2*(lng * alph_card**2 if cond_huffman else lng * alph_card)
+    nucl_bytes = (num_reads * lng) / 4
+    info_bytes = 0
+    print "\nSqueezed to: " + str(quality_bytes + 
+                                  nucl_bytes + 
+                                  header_bytes +
+                                  info_bytes) + " bytes"
+
+    print "Caution: reads info lost!"
 
 
 
-quality_bytes = summ / 8
-header_bytes = 2*(lng * alph_card**2 if cond_huffman else lng * alph_card)
-nucl_bytes = (num_reads * lng) / 4
-info_bytes = 0    ## TBD
-print "\nSqueezed to: " + str(quality_bytes + 
-                              nucl_bytes + 
-                              header_bytes +
-                              info_bytes) + " bytes"
+if __name__ == '__main__':
 
-print "Caution: reads info lost!"
+    ###################### Parameters ###########################
+    cond_huffman = True
+    #############################################################
+
+    if len(sys.argv) < 2:
+        print "Using: " + sys.argv[0] + " file.fastq"
+        exit()
+
+    filename = sys.argv[1]
+
+
+    compress(filename, cond_huffman)

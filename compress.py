@@ -122,11 +122,11 @@ def analyze(filename, path):
                 cond_table[i][c1][c2] = encode(c2, cond_symbols[i][c1])
     pbar.finish()
 
-    return num_reads, lng, alph_card, symbols, cond_symbols
+    return num_reads, lng, alph_card, table, cond_table
 
 
 
-def squeeze(path, num_reads, lng, symbols, cond_symbols, cond_huffman):
+def squeeze(path, num_reads, lng, table, cond_table, cond_huffman):
     print "Squeezing..."
 
     widgets = [Bar('#'), ' ', ETA()]
@@ -140,14 +140,14 @@ def squeeze(path, num_reads, lng, symbols, cond_symbols, cond_huffman):
         pbar.update(count)
 
         cur = line[0]
-        summ += len(encode(cur, symbols[0]))
+        summ += len(table[0][cur])
         for i in range(lng - 1):
             prev = cur
             cur = line[i+1]
             if cond_huffman:
-                summ += len(encode(cur, cond_symbols[i][prev]))
+                summ += len(cond_table[i][prev][cur])
             else:
-                summ += len(encode(cur, symbols[i + 1]))
+                summ += len(table[i + 1][cur])
             
         line = f.readline()
 
@@ -163,8 +163,8 @@ def compress(filename, parameters):
     path, file = os.path.dirname(filename), os.path.basename(filename)
     path += '/'
 
-    num_reads, lng, alph_card, symbols, cond_symbols = analyze(filename, path)
-    summ = squeeze(path, num_reads, lng, symbols, cond_symbols, cond_huffman)
+    num_reads, lng, alph_card, table, cond_table = analyze(filename, path)
+    summ = squeeze(path, num_reads, lng, table, cond_table, cond_huffman)
 
     quality_bytes = summ / 8
     header_bytes = 2*(lng * alph_card**2 if cond_huffman else lng * alph_card)

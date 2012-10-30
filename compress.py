@@ -11,7 +11,7 @@ def analyze(filename, path):
     print "Processing: " + filename
     print "File size: " + str(os.path.getsize(filename)) + " bytes"
 
-    print "Generating out_1, out_2 and out_3"
+    print "Generating out_1, out_2 and out_3..."
     f = open(filename, 'r')
     out1 = open(path + 'out_1', 'w')
     out2 = open(path + 'out_2', 'w')
@@ -62,7 +62,7 @@ def analyze(filename, path):
             if not freq[i].has_key(c1):
                 freq[i][c1] = 0
                 
-            freq[i][c1] += 1    
+            freq[i][c1] += 1
             cond_freq[i][c1][c2] += 1
 
         line = out3.readline()            

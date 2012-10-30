@@ -16,5 +16,5 @@ for filename in open('test.lst').readlines():
     filename, quick2, cond_huffman = filename.split()
 
     if (not quick) or quick2 == 'True': 
-        print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+        print "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
         compress(filename, [cond_huffman == 'True'])

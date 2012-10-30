@@ -1,0 +1,13 @@
+1. Full compress/decompress
+2. Flexible length
+3. No tmp files
+4. ...
+
+Testing: 
+ - comparing (bzip, sqz, ...)
+ - statistics
+ - golden files
+
+Research:
+ - hidden MM?
+ - linear representation

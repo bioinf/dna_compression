@@ -1,6 +1,14 @@
-from compress import compress
+#!/usr/bin/python
 
-quick = True
+from compress import compress
+import sys
+
+quick = False
+if len(sys.argv) > 1:
+    quick = (sys.argv[1].find('-q') != -1)
+
+
+print 'Quick testing:', quick
 
 for filename in open('test.lst').readlines():
     if filename[0] == '#': continue

@@ -132,7 +132,7 @@ def squeeze(path, filename, num_reads, lng, table, cond_table, cond_huffman):
     pbar = ProgressBar(widgets = widgets, maxval = num_reads).start()
     
     summ = 0; count = 0
-    cache = ''; MaxNcache = 8*4
+    cache = ''; MaxNcache = 8 * struct.calcsize('L')
     f = open(path + 'out_3', 'r')
     out = open(path + filename, 'wb')
     line = f.readline()

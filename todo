@@ -1,7 +1,8 @@
 1. Full compress/decompress
 2. Flexible length
 3. No tmp files
-4. ...
+4. Use alignment
+5. Lossy (quality, identifiers, order)
 
 Testing: 
  - comparing (bzip, sqz, ...)

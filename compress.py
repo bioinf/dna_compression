@@ -5,7 +5,7 @@ from progressbar import *
 
 import sys
 import os
-
+import struct
 
 def analyze(filename, path):
     print "Processing: " + filename
@@ -82,7 +82,6 @@ def analyze(filename, path):
         for sym in freq[i]:
             freq[i][sym] /= summ
 
-
     print "Building trees..."
     alph_card = 0
     symbols = [0 for i in range(lng)]
@@ -126,14 +125,16 @@ def analyze(filename, path):
 
 
 
-def squeeze(path, num_reads, lng, table, cond_table, cond_huffman):
+def squeeze(path, filename, num_reads, lng, table, cond_table, cond_huffman):
     print "Squeezing..."
 
     widgets = [Bar('#'), ' ', ETA()]
     pbar = ProgressBar(widgets = widgets, maxval = num_reads).start()
-
+    
     summ = 0; count = 0
+    cache = ''; MaxNcache = 8*4
     f = open(path + 'out_3', 'r')
+    out = open(path + filename, 'wb')
     line = f.readline()
     while line:
         count += 1
@@ -141,19 +142,28 @@ def squeeze(path, num_reads, lng, table, cond_table, cond_huffman):
 
         cur = line[0]
         summ += len(table[0][cur])
+        cache += table[0][cur]
         for i in range(lng - 1):
             prev = cur
             cur = line[i+1]
             if cond_huffman:
                 summ += len(cond_table[i][prev][cur])
+                cache += cond_table[i][prev][cur]
             else:
                 summ += len(table[i + 1][cur])
-            
+                cache += table[i + 1][cur]
+
         line = f.readline()
+        
+
+        while len(cache) > MaxNcache:
+            out.write(struct.pack('L', int(cache[:MaxNcache], 2)))
+            cache = cache[MaxNcache:]
 
     pbar.finish()
     f.close()
-    
+    out.close()
+
     return summ
 
 
@@ -164,7 +174,7 @@ def compress(filename, parameters):
     path += '/'
 
     num_reads, lng, alph_card, table, cond_table = analyze(filename, path)
-    summ = squeeze(path, num_reads, lng, table, cond_table, cond_huffman)
+    summ = squeeze(path, 'quality', num_reads, lng, table, cond_table, cond_huffman)
 
     quality_bytes = summ / 8
     header_bytes = 2*(lng * alph_card**2 if cond_huffman else lng * alph_card)
@@ -174,7 +184,7 @@ def compress(filename, parameters):
                                   nucl_bytes + 
                                   header_bytes +
                                   info_bytes) + " bytes"
-
+    print "Quality: " + str(quality_bytes) + " bytes"
     print "Caution: reads info lost!"
 
 

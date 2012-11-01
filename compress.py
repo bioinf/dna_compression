@@ -5,7 +5,7 @@ from progressbar import *
 
 import sys
 import os
-import struct
+from struct import pack, calcsize
 
 def analyze(filename, path):
     print "Processing: " + filename
@@ -123,18 +123,45 @@ def analyze(filename, path):
 
     return num_reads, lng, alph_card, table, cond_table
 
+def write_tables(out, lng, table, cond_table):
+
+    out.write(pack('H', lng))
+
+    for i in range(lng - 1):
+        out.write(pack('B', len(cond_table[i])))
+        for prev in cond_table[i]:
+            out.write(prev)
+            out.write(pack('B', len(cond_table[i][prev])))
+            for c in cond_table[i][prev]:
+                out.write(c)
+                out.write(pack('B', len(cond_table[i][prev][c])))
+                if len(cond_table[i][prev][c]) > 0:
+                    out.write(pack('H', int(cond_table[i][prev][c], 2)))
+
+    for i in range(lng):
+        out.write(pack('B', len(table[i])))
+        for c in table[i]:
+            out.write(c)
+            out.write(pack('B', len(table[i][c])))
+            out.write(pack('H', int(table[i][c], 2)))
 
 
-def squeeze(path, filename, num_reads, lng, table, cond_table, cond_huffman):
+def squeeze_quality(path, filename, num_reads, lng, table, cond_table, cond_huffman):
+
+    out = open(path + filename, 'wb')
+
+    # Write tables to file
+    write_tables(out, lng, table, cond_table)
+
+    # Squeezing
     print "Squeezing..."
 
     widgets = [Bar('#'), ' ', ETA()]
     pbar = ProgressBar(widgets = widgets, maxval = num_reads).start()
     
     summ = 0; count = 0
-    cache = ''; MaxNcache = 8 * struct.calcsize('L')
+    cache = ''; MaxNcache = 8 * calcsize('L')
     f = open(path + 'out_3', 'r')
-    out = open(path + filename, 'wb')
     line = f.readline()
     while line:
         count += 1
@@ -157,7 +184,7 @@ def squeeze(path, filename, num_reads, lng, table, cond_table, cond_huffman):
         
 
         while len(cache) > MaxNcache:
-            out.write(struct.pack('L', int(cache[:MaxNcache], 2)))
+            out.write(pack('L', int(cache[:MaxNcache], 2)))
             cache = cache[MaxNcache:]
 
     pbar.finish()
@@ -174,9 +201,11 @@ def compress(filename, parameters):
     path += '/'
 
     num_reads, lng, alph_card, table, cond_table = analyze(filename, path)
-    summ = squeeze(path, 'quality', num_reads, lng, table, cond_table, cond_huffman)
+    qual_summ = squeeze_quality(path, 'quality', num_reads, lng, table, cond_table, cond_huffman)
 
-    quality_bytes = summ / 8
+    quality_bytes = qual_summ / 8
+
+
     header_bytes = 2*(lng * alph_card**2 if cond_huffman else lng * alph_card)
     nucl_bytes = (num_reads * lng) / 4
     info_bytes = 0

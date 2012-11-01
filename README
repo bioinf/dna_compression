@@ -6,3 +6,13 @@ and use compress.py script to split and squeeze it:
   $ python compress.py ../data/ERR001268.filt.fastq
 
 All temporary files will be created in ../data/ 
+One can use "test.py" script for automated testing.
+For this write file "test.lst" like here
+
+  ## Filename                       Quick flag                        cond_huffman
+  ../data/tmp2.tmp                  True                              True 
+  ../data/tmp2.tmp                  True                              False
+  ../data/tmp.tmp                   True                              False  
+  ../data/ERR001268.filt.fastq      False                             True 
+
+and run "test.py" for testing or "test.py -q" for quick testing.

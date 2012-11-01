@@ -199,7 +199,7 @@ def squeeze_quality(path, filename, num_reads, lng, table, cond_table, cond_huff
 def compress(filename, parameters):
     cond_huffman = parameters[0]
 
-    path, file = os.path.dirname(filename), os.path.basename(filename)
+    path, _ = os.path.dirname(filename), os.path.basename(filename)
     path += '/'
 
     num_reads, lng, alph_card, table, cond_table = analyze(filename, path)

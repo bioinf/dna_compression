@@ -1,10 +1,10 @@
 #!/usr/bin/python
 
 from progressbar import *
+from struct import unpack, calcsize
 
 import sys
 import os
-import struct
 
 
 
@@ -13,31 +13,40 @@ def read_tables(filein):
 
     table = [{} for i in range(lng)]
     for i in range(lng):
-        n = unpack('B', filein.read(1))
+        n = unpack('B', filein.read(1))[0]
         for j in range(n):
             c = filein.read(1)
-            lenc = unpack('B', filein.read(1))
-            table[i][c] = bin(unpack('H', filein.read(2)))[2:].zfill(lenc)
+            lenc = unpack('B', filein.read(1))[0]
+            table[i][c] = bin(unpack('H', filein.read(2))[0])[2:].zfill(lenc)
 
     cond_table = [{} for i in range(lng-1)]
     for i in range(lng - 1):
-        n = unpack('B', filein.read(1))
+        n = unpack('B', filein.read(1))[0]
         for j in range(n):
             prev = filein.read(1)
             cond_table[i][prev] = {}
-            m = unpack('B', filein.read(1))
+            m = unpack('B', filein.read(1))[0]
             for k in range(m):
                 c = filein.read(1)
-                lenc = unpack('B', filein.read(1))
+                lenc = unpack('B', filein.read(1))[0]
                 if lenc > 0:
-                    cond_table[i][prev][c] = bin(unpack('H', filein.read(2)))[2:].zfill(lenc)
+                    cond_table[i][prev][c] = bin(unpack('H', filein.read(2))[0])[2:].zfill(lenc)
                 else:
                     cond_table[i][prev][c] = ''
                 
     return lng, table, cond_table
 
 
-def desqueeze_quality(path, filename, num_reads, lng, table, cond_table, cond_huffman):
+def desqueeze_quality(path, filename):
+
+    filein = open(path + filename, 'rb')
+
+    lng, table, cond_table = read_tables(filein)
+    
+    print lng, table, cond_table
+
+    error
+
     print "Squeezing..."
 
     widgets = [Bar('#'), ' ', ETA()]
@@ -46,7 +55,6 @@ def desqueeze_quality(path, filename, num_reads, lng, table, cond_table, cond_hu
     summ = 0; count = 0
     cache = ''; MaxNcache = 8 * struct.calcsize('L')
     f = open(path + 'out_3', 'r')
-    out = open(path + filename, 'wb')
     line = f.readline()
     while line:
         count += 1
@@ -69,37 +77,23 @@ def desqueeze_quality(path, filename, num_reads, lng, table, cond_table, cond_hu
         
 
         while len(cache) > MaxNcache:
-            out.write(struct.pack('L', int(cache[:MaxNcache], 2)))
+            filein.write(struct.pack('L', int(cache[:MaxNcache], 2)))
             cache = cache[MaxNcache:]
 
     pbar.finish()
     f.close()
-    out.close()
+    filein.close()
 
     return summ
 
 
-def decompress(filename, parameters):
-    cond_huffman = parameters[0]
+def decompress(filename):
 
-    path, file = os.path.dirname(filename), os.path.basename(filename)
+    path, filee = os.path.dirname(filename), os.path.basename(filename)
     path += '/'
 
-    num_reads, lng, alph_card, table, cond_table = analyze(filename, path)
-    qual_summ = squeeze_quality(path, 'quality', num_reads, lng, table, cond_table, cond_huffman)
 
-    quality_bytes = qual_summ / 8
-
-
-    header_bytes = 2*(lng * alph_card**2 if cond_huffman else lng * alph_card)
-    nucl_bytes = (num_reads * lng) / 4
-    info_bytes = 0
-    print "Squeezed to: " + str(quality_bytes + 
-                                  nucl_bytes + 
-                                  header_bytes +
-                                  info_bytes) + " bytes"
-    print "Quality: " + str(quality_bytes) + " bytes"
-    print "Caution: reads info lost!"
+    desqueeze_quality(path, filee)
 
 
 
@@ -112,10 +106,10 @@ if __name__ == '__main__':
     #############################################################
 
     if len(sys.argv) < 2:
-        print "Using: " + sys.argv[0] + " file.fastq"
+        print "Using: " + sys.argv[0] + " file.fstq"
         exit()
 
     filename = sys.argv[1]
 
 
-    compress(filename, parameters)
+    decompress(filename)

@@ -123,9 +123,17 @@ def analyze(filename, path):
 
     return num_reads, lng, alph_card, table, cond_table
 
-def write_tables(out, lng, table, cond_table):
 
+
+def write_tables(out, lng, table, cond_table):
     out.write(pack('H', lng))
+
+    for i in range(lng):
+        out.write(pack('B', len(table[i])))
+        for c in table[i]:
+            out.write(c)
+            out.write(pack('B', len(table[i][c])))
+            out.write(pack('H', int(table[i][c], 2)))
 
     for i in range(lng - 1):
         out.write(pack('B', len(cond_table[i])))
@@ -138,12 +146,6 @@ def write_tables(out, lng, table, cond_table):
                 if len(cond_table[i][prev][c]) > 0:
                     out.write(pack('H', int(cond_table[i][prev][c], 2)))
 
-    for i in range(lng):
-        out.write(pack('B', len(table[i])))
-        for c in table[i]:
-            out.write(c)
-            out.write(pack('B', len(table[i][c])))
-            out.write(pack('H', int(table[i][c], 2)))
 
 
 def squeeze_quality(path, filename, num_reads, lng, table, cond_table, cond_huffman):

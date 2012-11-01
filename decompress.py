@@ -43,10 +43,6 @@ def desqueeze_quality(path, filename):
 
     lng, table, cond_table = read_tables(filein)
     
-    print lng, table, cond_table
-
-    error
-
     print "Squeezing..."
 
     widgets = [Bar('#'), ' ', ETA()]

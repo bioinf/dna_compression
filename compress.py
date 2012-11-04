@@ -151,7 +151,8 @@ def write_tables(out, lng, table, cond_table):
 def squeeze_quality(path, filename, num_reads, lng, table, cond_table, cond_huffman):
 
     out = open(path + filename, 'wb')
-
+    out.write(pack('L', num_reads))
+    
     # Write tables to file
     write_tables(out, lng, table, cond_table)
 
@@ -186,7 +187,7 @@ def squeeze_quality(path, filename, num_reads, lng, table, cond_table, cond_huff
         
 
         while len(cache) > MaxNcache:
-            out.write(pack('L', int(cache[:MaxNcache], 2)))
+            out.write(pack('>Q', int(cache[:MaxNcache], 2)))
             cache = cache[MaxNcache:]
 
     pbar.finish()

@@ -1,6 +1,10 @@
 #!/usr/bin/python
 
 from compress import compress
+from decompress import decompress
+
+import filecmp
+import os
 import sys
 
 quick = False
@@ -18,3 +22,11 @@ for filename in open('test.lst').readlines():
     if (not quick) or quick2 == 'True': 
         print '\n' + '%' * 90
         compress(filename, [cond_huffman == 'True'])
+        print '-' * 60
+        decompress(filename + '.z')
+        path = os.path.dirname(filename) + '/'
+        if filecmp.cmp(path + 'out3', path + 'out33'):
+            print 'Quality files are identical.'
+        else:
+            print 'Quality files are different!'
+            

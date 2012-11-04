@@ -122,7 +122,7 @@ def desqueeze_quality(path, filename, cond_huffman):
     pbar = ProgressBar(widgets = widgets, maxval = num_reads).start()
     
     cache = {'v' : 0, 'len' : 0}
-    out = open(path + 'out_33', 'w')
+    out = open(path + 'out33', 'w')
     reads = 0
     while reads < num_reads:
         pbar.update(reads)
@@ -148,10 +148,14 @@ def desqueeze_quality(path, filename, cond_huffman):
 
 def decompress(filename):
 
+    print "Decompressing: " + filename
+    print "File size: " + str(os.path.getsize(filename)) + " bytes"
+
     path, filee = os.path.dirname(filename), os.path.basename(filename)
     path += '/'
 
 
+    #desqueeze_quality(path, filee, cond_huffman = True)
     desqueeze_quality(path, filee, cond_huffman = True)
 
 
@@ -165,7 +169,7 @@ if __name__ == '__main__':
     #############################################################
 
     if len(sys.argv) < 2:
-        print "Using: " + sys.argv[0] + " file.fstq"
+        print "Using: " + sys.argv[0] + " file.fastq.z"
         exit()
 
     filename = sys.argv[1]

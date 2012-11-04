@@ -8,14 +8,11 @@ import os
 from struct import pack, calcsize
 
 def analyze(filename, path):
-    print "Processing: " + filename
-    print "File size: " + str(os.path.getsize(filename)) + " bytes"
-
-    print "Generating out_1, out_2 and out_3..."
+    print "Generating out1, out2 and out3..."
     f = open(filename, 'r')
-    out1 = open(path + 'out_1', 'w')
-    out2 = open(path + 'out_2', 'w')
-    out3 = open(path + 'out_3', 'w')
+    out1 = open(path + 'out1', 'w')
+    out2 = open(path + 'out2', 'w')
+    out3 = open(path + 'out3', 'w')
     line = f.readline()
     num_reads = 0
     while line:
@@ -42,7 +39,7 @@ def analyze(filename, path):
     freq = [{} for i in range(lng)]
     cond_freq = [{} for i in range(lng)]
 
-    out3 = open(path + 'out_3', 'r')
+    out3 = open(path + 'out3', 'r')
     line = out3.readline()
     while line:
         count += 1
@@ -165,7 +162,7 @@ def squeeze_quality(path, filename, num_reads, lng, table, cond_table, cond_huff
     
     summ = 0; count = 0
     cache = ''; MaxNcache = 8 * calcsize('>Q')
-    f = open(path + 'out_3', 'r')
+    f = open(path + 'out3', 'r')
     line = f.readline()
     while line:
         count += 1
@@ -210,11 +207,14 @@ def squeeze_quality(path, filename, num_reads, lng, table, cond_table, cond_huff
 def compress(filename, parameters):
     cond_huffman = parameters[0]
 
+    print "Compressing: " + filename
+    print "File size: " + str(os.path.getsize(filename)) + " bytes"
+
     path, _ = os.path.dirname(filename), os.path.basename(filename)
     path += '/'
 
     num_reads, lng, alph_card, table, cond_table = analyze(filename, path)
-    qual_summ = squeeze_quality(path, 'quality', num_reads, lng, table, cond_table, cond_huffman)
+    qual_summ = squeeze_quality(path, filename + '.z', num_reads, lng, table, cond_table, cond_huffman)
 
     quality_bytes = qual_summ / 8
 

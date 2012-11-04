@@ -146,9 +146,8 @@ def write_tables(out, lng, table, cond_table):
 
 
 
-def squeeze_quality(path, filename, num_reads, lng, table, cond_table, cond_huffman):
+def squeeze_quality(path, out, num_reads, lng, table, cond_table, cond_huffman):
 
-    out = open(path + filename, 'wb')
     out.write(pack('L', num_reads))
     
     # Write tables to file
@@ -214,11 +213,19 @@ def compress(filename, parameters):
     path += '/'
 
     num_reads, lng, alph_card, table, cond_table = analyze(filename, path)
-    qual_summ = squeeze_quality(path, filename + '.z', num_reads, lng, table, cond_table, cond_huffman)
 
+    fileout = open(path + filename + '.z', 'wb')
+
+    # Write parameters to file
+    fileout.write(pack('B'*len(parameters), *parameters))
+
+    # Quality
+    qual_summ = squeeze_quality(path, fileout, num_reads,
+                                lng, table, cond_table, cond_huffman)
+
+
+    # Print results
     quality_bytes = qual_summ / 8
-
-
     header_bytes = 2*(lng * alph_card**2 if cond_huffman else lng * alph_card)
     nucl_bytes = (num_reads * lng) / 4
     info_bytes = 0

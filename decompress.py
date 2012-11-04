@@ -79,9 +79,8 @@ def prepare_table(lng, table, cond_table):
 
     return table2, cond_table2
 
-def desqueeze_quality(path, filename, cond_huffman):
+def desqueeze_quality(path, filein, cond_huffman):
 
-    filein = open(path + filename, 'rb')
     num_reads = unpack('L', filein.read(calcsize('L')))[0]
 
     lng, table, cond_table = read_tables(filein)
@@ -111,7 +110,7 @@ def desqueeze_quality(path, filename, cond_huffman):
         c = table[index]
         reallen = c['len']
         c = c['c']
-        
+
         cache['v'] = (cachev & ~((~(1 << reallen)) << (cachesize - reallen))) << reallen
         cache['len'] = cachelen - reallen
         
@@ -133,7 +132,7 @@ def desqueeze_quality(path, filename, cond_huffman):
             if cond_huffman:
                 cur = get_next(cond_table2[i][cur], filein, cache)
             else:
-                cur = get_next(table2[i], filein, cache)
+                cur = get_next(table2[i + 1], filein, cache)
 
             line += cur
         
@@ -145,28 +144,26 @@ def desqueeze_quality(path, filename, cond_huffman):
     filein.close()
 
 
-
 def decompress(filename):
 
     print "Decompressing: " + filename
     print "File size: " + str(os.path.getsize(filename)) + " bytes"
 
-    path, filee = os.path.dirname(filename), os.path.basename(filename)
+    path, filename = os.path.dirname(filename), os.path.basename(filename)
     path += '/'
 
+    filein = open(path + filename, 'rb')
 
-    #desqueeze_quality(path, filee, cond_huffman = True)
-    desqueeze_quality(path, filee, cond_huffman = True)
+    # Read parameters
+    parameters = unpack('B'*1, filein.read(1))
+    cond_huffman = bool(parameters[0])
+
+    # Quality
+    desqueeze_quality(path, filein, cond_huffman)
 
 
 
 if __name__ == '__main__':
-
-    ###################### Parameters ###########################
-    cond_huffman = True
-    
-    parameters = [cond_huffman]
-    #############################################################
 
     if len(sys.argv) < 2:
         print "Using: " + sys.argv[0] + " file.fastq.z"

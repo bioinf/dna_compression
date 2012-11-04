@@ -3,6 +3,7 @@
 from compress import compress
 from decompress import decompress
 
+from termcolor import colored
 import filecmp
 import os
 import sys
@@ -26,7 +27,7 @@ for filename in open('test.lst').readlines():
         decompress(filename + '.z')
         path = os.path.dirname(filename) + '/'
         if filecmp.cmp(path + 'out3', path + 'out33'):
-            print 'Quality files are identical'
+            print colored('Quality files are identical', 'green')
         else:
-            print 'Quality files are different!'
+            print colored('Quality files are different!', 'red')
             

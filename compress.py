@@ -133,7 +133,7 @@ def write_tables(out, lng, table, cond_table):
         for c in table[i]:
             out.write(c)
             out.write(pack('B', len(table[i][c])))
-            out.write(pack('H', int(table[i][c], 2)))
+            out.write(pack('H', int('0' + table[i][c], 2)))
 
     for i in range(lng - 1):
         out.write(pack('B', len(cond_table[i])))
@@ -144,7 +144,7 @@ def write_tables(out, lng, table, cond_table):
                 out.write(c)
                 out.write(pack('B', len(cond_table[i][prev][c])))
                 if len(cond_table[i][prev][c]) > 0:
-                    out.write(pack('H', int(cond_table[i][prev][c], 2)))
+                    out.write(pack('H', int('0' + cond_table[i][prev][c], 2)))
 
 
 
@@ -192,6 +192,15 @@ def squeeze_quality(path, filename, num_reads, lng, table, cond_table, cond_huff
 
     pbar.finish()
     f.close()
+    
+    # Cache tail processing
+    bytesize = calcsize('B') * 8 # Byte size in bits
+    while cache:
+        if len(cache) < bytesize:
+            cache += '0' * (bytesize - len(cache))
+        out.write(pack('B', int(cache[:bytesize], 2)))
+        cache = cache[bytesize:]
+    out.write('\x00' * 8)
     out.close()
 
     return summ

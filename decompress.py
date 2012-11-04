@@ -76,7 +76,7 @@ def prepare_table(lng, table, cond_table):
 
     return table2, cond_table2
 
-def desqueeze_quality(path, filename):
+def desqueeze_quality(path, filename, cond_huffman):
 
     filein = open(path + filename, 'rb')
     num_reads = unpack('L', filein.read(calcsize('L')))[0]
@@ -96,22 +96,20 @@ def desqueeze_quality(path, filename):
         table = table['t']
 
 
-#        print 'start'
         if cachelen < maxlen:
             cachev = cachev >> (cachesize - cachelen)
             while cachesize - cachelen >= bytesize:
                 byte = unpack('B', filein.read(1))[0]
-#                print byte, cachesize, cachelen
                 cachev = (cachev << bytesize) | byte
                 cachelen += bytesize
-#        print 'stop'
+            cachev = cachev << (cachesize - cachelen)
 
         index = cachev >> (cachesize - maxlen)
-#        print cachev, cachesize, maxlen, index
         c = table[index]
         reallen = c['len']
         c = c['c']
-        cache['v'] = (cachev & (1 << (cachesize - reallen))) << reallen
+        
+        cache['v'] = (cachev & ~((~(1 << reallen)) << (cachesize - reallen))) << reallen
         cache['len'] = cachelen - reallen
         
         return c
@@ -151,7 +149,7 @@ def decompress(filename):
     path += '/'
 
 
-    desqueeze_quality(path, filee)
+    desqueeze_quality(path, filee, cond_huffman = True)
 
 
 

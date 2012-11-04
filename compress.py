@@ -133,7 +133,8 @@ def write_tables(out, lng, table, cond_table):
         for c in table[i]:
             out.write(c)
             out.write(pack('B', len(table[i][c])))
-            out.write(pack('H', int('0' + table[i][c], 2)))
+            if len(table[i][c]) > 0:
+                out.write(pack('H', int('0' + table[i][c], 2)))
 
     for i in range(lng - 1):
         out.write(pack('B', len(cond_table[i])))

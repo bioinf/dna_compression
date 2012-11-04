@@ -17,7 +17,10 @@ def read_tables(filein):
         for j in range(n):
             c = filein.read(1)
             lenc = unpack('B', filein.read(1))[0]
-            table[i][c] = bin(unpack('H', filein.read(2))[0])[2:].zfill(lenc)
+            if lenc > 0:
+                table[i][c] = bin(unpack('H', filein.read(2))[0])[2:].zfill(lenc)
+            else:
+                table[i][c] = ''
 
     cond_table = [{} for i in range(lng-1)]
     for i in range(lng - 1):
@@ -83,7 +86,7 @@ def desqueeze_quality(path, filename, cond_huffman):
 
     lng, table, cond_table = read_tables(filein)
     table2, cond_table2 = prepare_table(lng, table, cond_table)
-    
+
     print "Desqueezing..."
 
     def get_next(table, filein, cache):

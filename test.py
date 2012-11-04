@@ -26,7 +26,7 @@ for filename in open('test.lst').readlines():
         decompress(filename + '.z')
         path = os.path.dirname(filename) + '/'
         if filecmp.cmp(path + 'out3', path + 'out33'):
-            print 'Quality files are identical.'
+            print 'Quality files are identical'
         else:
             print 'Quality files are different!'
             

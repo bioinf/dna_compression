@@ -163,7 +163,7 @@ def squeeze_quality(path, filename, num_reads, lng, table, cond_table, cond_huff
     pbar = ProgressBar(widgets = widgets, maxval = num_reads).start()
     
     summ = 0; count = 0
-    cache = ''; MaxNcache = 8 * calcsize('L')
+    cache = ''; MaxNcache = 8 * calcsize('>Q')
     f = open(path + 'out_3', 'r')
     line = f.readline()
     while line:

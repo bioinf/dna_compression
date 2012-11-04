@@ -2,7 +2,8 @@
 2. Flexible length
 3. No tmp files
 4. Use alignment
-5. Lossy (quality, identifiers, order)
+5. Use pair alignment
+6. Lossy (quality, identifiers, order)
 
 Testing: 
  - comparing (bzip, sqz, ...)

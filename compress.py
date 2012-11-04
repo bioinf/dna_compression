@@ -69,15 +69,16 @@ def analyze(filename, path):
     out3.close()
     
 
-    for c1 in cond_freq[i]:
-        for c2 in cond_freq[i][c1]:
-            cond_freq[i][c1][c2] = cond_freq[i][c1][c2] / float(freq[i][c1])
+#    for i in range(len(cond_freq)):
+#        for c1 in cond_freq[i]:
+#            for c2 in cond_freq[i][c1]:
+#                cond_freq[i][c1][c2] = cond_freq[i][c1][c2] / float(freq[i][c1])
             
             
-    for i in range(len(freq)):
-        summ = float(sum(freq[i].values()))
-        for sym in freq[i]:
-            freq[i][sym] /= summ
+#    for i in range(len(freq)):
+#        summ = float(sum(freq[i].values()))
+#        for sym in freq[i]:
+#            freq[i][sym] /= summ
 
     print "Building trees..."
     alph_card = 0

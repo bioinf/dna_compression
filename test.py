@@ -19,7 +19,7 @@ if len(sys.argv) > 1:
 
 print 'Quick testing:', quick
 
-table = PrettyTable(["File name", "Size before", "Size after", "CTime", "DTime", "Result"])
+table = PrettyTable(["File name", "Size before", "Size after", "Ratio", "CTime", "DTime", "Result"])
 for filename in open('test.lst').readlines():
     if filename[0] == '#': continue
 
@@ -37,6 +37,9 @@ for filename in open('test.lst').readlines():
 
         report['comp_time'] = '%.2f' % (time() - start_time) + 's'
         report['after_size'] = str(os.path.getsize(filename + '.z')) + " bytes"
+        report['ratio'] = Fore.YELLOW + str(os.path.getsize(filename + '.z') * 100 /
+                              os.path.getsize(filename)) + '%' + Fore.RESET
+
         start_time = time()
 
         print '-' * 60
@@ -44,6 +47,7 @@ for filename in open('test.lst').readlines():
         # Decompress
         decompress(filename + '.z')
         report['decomp_time'] = '%.2f' % (time() - start_time) + 's'
+
 
         path = os.path.dirname(filename) + '/'
         if filecmp.cmp(path + 'out3', path + 'out33'):
@@ -53,13 +57,15 @@ for filename in open('test.lst').readlines():
             print Fore.RED + 'Quality files are different!' + Fore.RESET
             report['success'] = Fore.RED + 'Failed' + Fore.RESET
 
+
         table.add_row([report['name'], report['before_size'],
-                   report['after_size'], report['comp_time'],
+                   report['after_size'], report['ratio'], report['comp_time'],
                    report['decomp_time'], report['success']])
 
 
-table.align["Compress"] = "r"
-table.align["Decompress"] = "r"
+table.align["CTime"] = "r"
+table.align["DTime"] = "r"
+table.align["Ratio"] = "r"
 table.align["Size before"] = "r"
 table.align["Size after"] = "r"
 

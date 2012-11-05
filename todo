@@ -4,6 +4,7 @@
 4. Use alignment
 5. Use pair alignment
 6. Lossy (quality, identifiers, order)
+7. Error processing, comments, general refactoring
 
 Testing: 
  - comparing (bzip, sqz, ...)

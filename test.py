@@ -5,7 +5,9 @@ from decompress import decompress
 
 import colorama; colorama.init()
 from colorama import Fore
+from prettytable import PrettyTable
 
+from time import time
 import filecmp
 import os
 import sys
@@ -17,7 +19,7 @@ if len(sys.argv) > 1:
 
 print 'Quick testing:', quick
 
-reports = []
+table = PrettyTable(["File name", "Size before", "Size after", "CTime", "DTime", "Result"])
 for filename in open('test.lst').readlines():
     if filename[0] == '#': continue
 
@@ -27,20 +29,39 @@ for filename in open('test.lst').readlines():
         print '\n' + '%' * 90
 
         report = {'name' : filename}
+        start_time = time()
+        report['before_size'] = str(os.path.getsize(filename)) + " bytes"
+
+        # Compress
         compress(filename, [cond_huffman == 'True'])
+
+        report['comp_time'] = '%.2f' % (time() - start_time) + 's'
+        report['after_size'] = str(os.path.getsize(filename + '.z')) + " bytes"
+        start_time = time()
+
         print '-' * 60
+
+        # Decompress
         decompress(filename + '.z')
+        report['decomp_time'] = '%.2f' % (time() - start_time) + 's'
+
         path = os.path.dirname(filename) + '/'
         if filecmp.cmp(path + 'out3', path + 'out33'):
             print Fore.GREEN + 'Quality files are identical' + Fore.RESET
-            report['success'] = Fore.GREEN + 'Pass' + Fore.RESET
+            report['success'] = Fore.GREEN + 'Passed' + Fore.RESET
         else:
             print Fore.RED + 'Quality files are different!' + Fore.RESET
-            report['success'] = Fore.RED + 'Fail' + Fore.RESET
+            report['success'] = Fore.RED + 'Failed' + Fore.RESET
 
-        reports.append(report)
+        table.add_row([report['name'], report['before_size'],
+                   report['after_size'], report['comp_time'],
+                   report['decomp_time'], report['success']])
 
+
+table.align["Compress"] = "r"
+table.align["Decompress"] = "r"
+table.align["Size before"] = "r"
+table.align["Size after"] = "r"
 
 print
-for report in reports:
-    print report['name'], ':', report['success']
+print(table)

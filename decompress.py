@@ -8,8 +8,7 @@ import os
 
 
 
-def read_tables(filein):
-    lng = unpack('H', filein.read(2))[0]
+def read_tables(filein, lng):
 
     table = [{} for i in range(lng)]
     for i in range(lng):
@@ -37,7 +36,7 @@ def read_tables(filein):
                 else:
                     cond_table[i][prev][c] = ''
                 
-    return lng, table, cond_table
+    return table, cond_table
 
 def prepare_table(lng, table, cond_table):
     
@@ -79,11 +78,10 @@ def prepare_table(lng, table, cond_table):
 
     return table2, cond_table2
 
-def desqueeze_quality(path, filein, cond_huffman):
 
-    num_reads = unpack('L', filein.read(calcsize('L')))[0]
+def desqueeze_quality(path, filein, cond_huffman, num_reads, lng):
 
-    lng, table, cond_table = read_tables(filein)
+    table, cond_table = read_tables(filein, lng)
     table2, cond_table2 = prepare_table(lng, table, cond_table)
 
     print "Desqueezing..."
@@ -149,17 +147,18 @@ def decompress(filename):
     print "Decompressing: " + filename
     print "File size: " + str(os.path.getsize(filename)) + " bytes"
 
-    path, filename = os.path.dirname(filename), os.path.basename(filename)
-    path += '/'
+    path, filename = os.path.dirname(filename) + '/', os.path.basename(filename)
 
+    # Input file
     filein = open(path + filename, 'rb')
 
     # Read parameters
-    parameters = unpack('B'*1, filein.read(1))
-    cond_huffman = bool(parameters[0])
+    cond_huffman = bool(unpack('B'*1, filein.read(1))[0])
+    num_reads = unpack('L', filein.read(calcsize('L')))[0]
+    lng = unpack('H', filein.read(2))[0]
 
-    # Quality
-    desqueeze_quality(path, filein, cond_huffman)
+    # Read quality
+    desqueeze_quality(path, filein, cond_huffman, num_reads, lng)
 
 
 

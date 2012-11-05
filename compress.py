@@ -124,7 +124,6 @@ def analyze(filename, path):
 
 
 def write_tables(out, lng, table, cond_table):
-    out.write(pack('H', lng))
 
     for i in range(lng):
         out.write(pack('B', len(table[i])))
@@ -149,8 +148,6 @@ def write_tables(out, lng, table, cond_table):
 
 def squeeze_quality(path, out, num_reads, lng, table, cond_table, cond_huffman):
 
-    out.write(pack('L', num_reads))
-    
     # Write tables to file
     write_tables(out, lng, table, cond_table)
 
@@ -205,25 +202,27 @@ def squeeze_quality(path, out, num_reads, lng, table, cond_table, cond_huffman):
 
 
 def compress(filename, parameters):
-    cond_huffman = parameters[0]
 
     print "Compressing: " + filename
     print "File size: " + str(os.path.getsize(filename)) + " bytes"
 
-    path, _ = os.path.dirname(filename), os.path.basename(filename)
-    path += '/'
+    path, _ = os.path.dirname(filename) + '/', os.path.basename(filename)
 
+    # Analyzing and splitting out to three files: out1, out2, out3
     num_reads, lng, alph_card, table, cond_table = analyze(filename, path)
 
+    # Output file
     fileout = open(path + filename + '.z', 'wb')
 
     # Write parameters to file
-    fileout.write(pack('B'*len(parameters), *parameters))
+    cond_huffman = parameters[0]
+    fileout.write(pack('B', cond_huffman))
+    fileout.write(pack('L', num_reads))
+    fileout.write(pack('H', lng))
 
-    # Quality
+    # Write quality
     qual_summ = squeeze_quality(path, fileout, num_reads,
                                 lng, table, cond_table, cond_huffman)
-
 
     # Print results
     quality_bytes = qual_summ / 8

@@ -55,15 +55,17 @@ MSWORD_FRIENDLY = 11
 PLAIN_COLUMNS = 12
 RANDOM = 20
 
+def lenx(line):
+    return len(line) - line.count('\033') * 5
+
 def _get_size(text):
     max_width = 0
     max_height = 0
     text = _unicode(text)
     for line in text.split("\n"):
         max_height += 1
-        lenline = len(line) - line.count('\033') * 5
-        if lenline > max_width:
-            max_width = lenline
+        if lenx(line) > max_width:
+            max_width = lenx(line)
 
     return (max_width, max_height)
         
@@ -867,7 +869,7 @@ class PrettyTable(object):
             lines = _unicode(value).split("\n")
             new_lines = []
             for line in lines: 
-                if max_width and len(line) > max_width:
+                if max_width and lenx(line) > max_width:
                     line = textwrap.fill(line, max_width)
                 new_lines.append(line)
             lines = new_lines
@@ -877,7 +879,7 @@ class PrettyTable(object):
         #old_widths = self._widths[:]
 
         for index, field in enumerate(self._field_names):
-            namewidth = len(field)
+            namewidth = lenx(field)
             datawidth = min(self._widths[index], self._max_width.get(field, self._widths[index]))
             if options["header"]:
                self._widths[index] = max(namewidth, datawidth)
@@ -907,13 +909,13 @@ class PrettyTable(object):
             for l in lines:
                 if options["fields"] and field not in options["fields"]:
                     continue
-
+                adj = l.count('\033') * 5
                 if self._align[field] == "l":
-                    bits[y].append(" " * lpad + _unicode(l).ljust(width) + " " * rpad)
+                    bits[y].append(" " * lpad + _unicode(l).ljust(width+adj) + " " * rpad)
                 elif self._align[field] == "r":
-                    bits[y].append(" " * lpad + _unicode(l).rjust(width) + " " * rpad)
+                    bits[y].append(" " * lpad + _unicode(l).rjust(width+adj) + " " * rpad)
                 else:
-                    bits[y].append(" " * lpad + _unicode(l).center(width) + " " * rpad)
+                    bits[y].append(" " * lpad + _unicode(l).center(width+adj) + " " * rpad)
                 if options["border"]:
                     bits[y].append(self.vertical_char)
 

@@ -146,10 +146,10 @@ def write_tables(out, lng, table, cond_table):
 
 
 
-def squeeze_quality(path, out, num_reads, lng, table, cond_table, cond_huffman):
+def squeeze_quality(path, fileout, num_reads, lng, table, cond_table, cond_huffman):
 
     # Write tables to file
-    write_tables(out, lng, table, cond_table)
+    write_tables(fileout, lng, table, cond_table)
 
     # Squeezing
     print "Squeezing..."
@@ -182,7 +182,7 @@ def squeeze_quality(path, out, num_reads, lng, table, cond_table, cond_huffman):
         
 
         while len(cache) > MaxNcache:
-            out.write(pack('>Q', int(cache[:MaxNcache], 2)))
+            fileout.write(pack('>Q', int(cache[:MaxNcache], 2)))
             cache = cache[MaxNcache:]
 
     pbar.finish()
@@ -193,10 +193,10 @@ def squeeze_quality(path, out, num_reads, lng, table, cond_table, cond_huffman):
     while cache:
         if len(cache) < bytesize:
             cache += '0' * (bytesize - len(cache))
-        out.write(pack('B', int(cache[:bytesize], 2)))
+        fileout.write(pack('B', int(cache[:bytesize], 2)))
         cache = cache[bytesize:]
-    out.write('\x00' * 8)
-    out.close()
+    fileout.write('\x00' * 8)
+    fileout.close()
 
     return summ
 

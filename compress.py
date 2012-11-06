@@ -148,11 +148,8 @@ def write_tables(out, lng, table, cond_table):
 
 def squeeze_quality(path, fileout, num_reads, lng, table, cond_table, cond_huffman):
 
-    # Write tables to file
-    write_tables(fileout, lng, table, cond_table)
 
-    # Squeezing
-    print "Squeezing..."
+    print "Squeezing quality..."
 
     widgets = [Bar('#'), ' ', ETA()]
     pbar = ProgressBar(widgets = widgets, maxval = num_reads).start()
@@ -195,10 +192,54 @@ def squeeze_quality(path, fileout, num_reads, lng, table, cond_table, cond_huffm
             cache += '0' * (bytesize - len(cache))
         fileout.write(pack('B', int(cache[:bytesize], 2)))
         cache = cache[bytesize:]
-    fileout.write('\x00' * 8)
-    fileout.close()
 
-    return summ
+    return summ / 8 + 1
+
+
+def squeeze_seq(path, fileout, num_reads, lng):
+
+    print "Squeezing sequences..."
+
+
+    def seq_to_bits(s):
+        return s.replace('A', '00').replace('T', '01').replace('G', '10').replace('C', '11').replace('N', '00')
+
+
+    widgets = [Bar('#'), ' ', ETA()]
+    pbar = ProgressBar(widgets = widgets, maxval = num_reads).start()
+
+    summ = 0; count = 0
+    cache = ''; MaxNcache = calcsize('>Q') * 4 # Max number of bp in cache
+    f = open(path + 'out2', 'r'); line = f.readline()
+    while line:
+        count += 1
+        pbar.update(count)
+
+        summ += len(line.replace('\n', '').replace('\r', ''))
+        cache += line.replace('\n', '').replace('\r', '')
+
+        while len(cache) > MaxNcache:
+            fileout.write(pack('>Q', int(seq_to_bits(cache[:MaxNcache]), 2)))
+            cache = cache[MaxNcache:]
+
+        line = f.readline()
+
+    pbar.finish()
+    f.close()
+
+    # Cache tail processing
+    summ += len(cache) 
+    cache = seq_to_bits(cache)
+    bytesize = calcsize('B') * 8 # Number of bp in byte
+    while cache:
+        if len(cache) < bytesize:
+            cache += '0' * (bytesize - len(cache))
+        fileout.write(pack('B', int(cache[:bytesize], 2)))
+        cache = cache[bytesize:]
+
+
+    return summ / 4 + 1
+
 
 
 def compress(filename, parameters):
@@ -220,20 +261,31 @@ def compress(filename, parameters):
     fileout.write(pack('L', num_reads))
     fileout.write(pack('H', lng))
 
+
+    # Write tables to file
+    write_tables(fileout, lng, table, cond_table)
+
     # Write quality
-    qual_summ = squeeze_quality(path, fileout, num_reads,
+    qual_bytes = squeeze_quality(path, fileout, num_reads,
                                 lng, table, cond_table, cond_huffman)
 
+    # Write sequence
+    seq_bytes = squeeze_seq(path, fileout, num_reads, lng)
+
+ 
+    fileout.write('0' * 8)
+    fileout.close()
+
     # Print results
-    quality_bytes = qual_summ / 8
     header_bytes = 2*(lng * alph_card**2 if cond_huffman else lng * alph_card)
     nucl_bytes = (num_reads * lng) / 4
     info_bytes = 0
-    print "Squeezed to: " + str(quality_bytes + 
-                                  nucl_bytes + 
+    print "Squeezed to: " + str(qual_bytes + 
+                                  nucl_bytes +
                                   header_bytes +
                                   info_bytes) + " bytes"
-    print "Quality: " + str(quality_bytes) + " bytes"
+    print "Quality: " + str(qual_bytes) + " bytes"
+    print "Sequences: " + str(seq_bytes) + " bytes"
     print "Caution: reads info lost!"
 
 

@@ -79,12 +79,11 @@ def prepare_table(lng, table, cond_table):
     return table2, cond_table2
 
 
-def desqueeze_quality(path, filein, cond_huffman, num_reads, lng):
+def desqueeze_quality(path, filein, cond_huffman, num_reads, lng, table, cond_table):
 
-    table, cond_table = read_tables(filein, lng)
     table2, cond_table2 = prepare_table(lng, table, cond_table)
 
-    print "Desqueezing..."
+    print "Desqueezing quality..."
 
     def get_next(table, filein, cache):
         cachesize = calcsize('Q') * 8  # Cache size (64 bits)
@@ -139,7 +138,70 @@ def desqueeze_quality(path, filein, cond_huffman, num_reads, lng):
 
     pbar.finish()
     out.close()
+
+    cachesize = calcsize('Q') * 8     
+    len, tail = (cache['len'] / 8) * 8, cache['len'] % 8
+    rest = bin(cache['v'])[2:].zfill(cachesize)[tail:][:len]
+
+    return rest
+
+def desqueeze_seq(path, filein, num_reads, lng, rest):
+
+
+    print "Desqueezing sequences..."
+
+    def get_next(table, filein, cache):
+        cachesize = calcsize('Q') * 8  # Cache size (64 bits)
+        cachelen = cache['len']        # Substantial bits of cache
+        cachev = cache['v']            # Cache value
+        bytesize = calcsize('B') * 8   # Byte size in bits
+
+        maxlen = table['maxlen']
+        table = table['t']
+
+
+        if cachelen < maxlen:
+            cachev = cachev >> (cachesize - cachelen)
+            while cachesize - cachelen >= bytesize:
+                byte = unpack('B', filein.read(1))[0]
+                cachev = (cachev << bytesize) | byte
+                cachelen += bytesize
+            cachev = cachev << (cachesize - cachelen)
+
+        index = cachev >> (cachesize - maxlen)
+        #print cachelen, cachev, cachesize, maxlen, index,
+        c = table[index]
+        reallen = c['len']
+        c = c['c']
+
+        cache['v'] = (cachev & ~((~(1 << reallen)) << (cachesize - reallen))) << reallen
+        cache['len'] = cachelen - reallen
+        
+        return c
+
+
+    widgets = [Bar('#'), ' ', ETA()]
+    pbar = ProgressBar(widgets = widgets, maxval = num_reads).start()
+
+
+    table = {'maxlen' : 2, 't' : [{'len' : 2, 'c' : 'A'}, {'len' : 2, 'c' : 'T'}, {'len' : 2, 'c' : 'G'}, {'len' : 2, 'c' : 'C'}]}
+    cache = {'v' : int(rest + '0' * (64 - len(rest)), 2), 'len' : len(rest)}
+    out = open(path + 'out22', 'w')
+    reads = 0
+    while reads < num_reads:
+        pbar.update(reads)
+
+        line = ''
+        for i in range(lng):
+            line += get_next(table, filein, cache)
+
+        out.write(line + '\n')
+        reads += 1
+
+    pbar.finish()
+    out.close()
     filein.close()
+
 
 
 def decompress(filename):
@@ -152,14 +214,23 @@ def decompress(filename):
     # Input file
     filein = open(path + filename, 'rb')
 
+    
+
     # Read parameters
     cond_huffman = bool(unpack('B'*1, filein.read(1))[0])
     num_reads = unpack('L', filein.read(calcsize('L')))[0]
     lng = unpack('H', filein.read(2))[0]
 
-    # Read quality
-    desqueeze_quality(path, filein, cond_huffman, num_reads, lng)
+    # Read tables
+    table, cond_table = read_tables(filein, lng)
 
+    # Read quality
+    rest = desqueeze_quality(path, filein, cond_huffman, num_reads, lng, table, cond_table)
+
+    # Read sequence
+    desqueeze_seq(path, filein, num_reads, lng, rest)
+
+    filein.close()
 
 
 if __name__ == '__main__':

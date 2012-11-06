@@ -253,7 +253,7 @@ def compress(filename, parameters):
     num_reads, lng, alph_card, table, cond_table = analyze(filename, path)
 
     # Output file
-    fileout = open(path + filename + '.z', 'wb')
+    fileout = open(filename + '.z', 'wb')
 
     # Write parameters to file
     cond_huffman = parameters[0]

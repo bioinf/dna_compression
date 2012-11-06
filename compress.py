@@ -69,17 +69,6 @@ def analyze(filename, path):
     out3.close()
     
 
-#    for i in range(len(cond_freq)):
-#        for c1 in cond_freq[i]:
-#            for c2 in cond_freq[i][c1]:
-#                cond_freq[i][c1][c2] = cond_freq[i][c1][c2] / float(freq[i][c1])
-            
-            
-#    for i in range(len(freq)):
-#        summ = float(sum(freq[i].values()))
-#        for sym in freq[i]:
-#            freq[i][sym] /= summ
-
     print "Building trees..."
     alph_card = 0
     symbols = [0 for i in range(lng)]
@@ -202,24 +191,24 @@ def squeeze_seq(path, fileout, num_reads, lng):
 
 
     def seq_to_bits(s):
-        return s.replace('A', '00').replace('T', '01').replace('G', '10').replace('C', '11').replace('N', '00')
+        return s.replace('A', '00').replace('T', '01').replace('G', '10').replace('C', '110').replace('N', '111')
 
 
     widgets = [Bar('#'), ' ', ETA()]
     pbar = ProgressBar(widgets = widgets, maxval = num_reads).start()
 
     summ = 0; count = 0
-    cache = ''; MaxNcache = calcsize('>Q') * 4 # Max number of bp in cache
+    cache = ''; MaxNcache = calcsize('>Q') * 8 # Max number of bits in cache
     f = open(path + 'out2', 'r'); line = f.readline()
     while line:
         count += 1
         pbar.update(count)
 
         summ += len(line.replace('\n', '').replace('\r', ''))
-        cache += line.replace('\n', '').replace('\r', '')
+        cache += seq_to_bits(line.replace('\n', '').replace('\r', ''))
 
         while len(cache) > MaxNcache:
-            fileout.write(pack('>Q', int(seq_to_bits(cache[:MaxNcache]), 2)))
+            fileout.write(pack('>Q', int(cache[:MaxNcache], 2)))
             cache = cache[MaxNcache:]
 
         line = f.readline()
@@ -230,7 +219,7 @@ def squeeze_seq(path, fileout, num_reads, lng):
     # Cache tail processing
     summ += len(cache) 
     cache = seq_to_bits(cache)
-    bytesize = calcsize('B') * 8 # Number of bp in byte
+    bytesize = calcsize('B') * 8 # Byte size in bits
     while cache:
         if len(cache) < bytesize:
             cache += '0' * (bytesize - len(cache))
@@ -262,7 +251,7 @@ def compress(filename, parameters):
     fileout.write(pack('H', lng))
 
 
-    # Write tables to file
+    # Write Huffman tables to file
     write_tables(fileout, lng, table, cond_table)
 
     # Write quality

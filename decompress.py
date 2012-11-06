@@ -184,7 +184,10 @@ def desqueeze_seq(path, filein, num_reads, lng, rest):
     pbar = ProgressBar(widgets = widgets, maxval = num_reads).start()
 
 
-    table = {'maxlen' : 2, 't' : [{'len' : 2, 'c' : 'A'}, {'len' : 2, 'c' : 'T'}, {'len' : 2, 'c' : 'G'}, {'len' : 2, 'c' : 'C'}]}
+    table = {'maxlen' : 3, 't' : [{'len' : 2, 'c' : 'A'}, {'len' : 2, 'c' : 'A'}, 
+                                  {'len' : 2, 'c' : 'T'}, {'len' : 2, 'c' : 'T'}, 
+                                  {'len' : 2, 'c' : 'G'}, {'len' : 2, 'c' : 'G'}, 
+                                  {'len' : 3, 'c' : 'C'}, {'len' : 3, 'c' : 'N'}]}
     cache = {'v' : int(rest + '0' * (64 - len(rest)), 2), 'len' : len(rest)}
     out = open(path + 'out22', 'w')
     reads = 0

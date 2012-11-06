@@ -50,11 +50,23 @@ for filename in open('test.lst').readlines():
 
 
         path = os.path.dirname(filename) + '/'
+	success = True
+        if filecmp.cmp(path + 'out2', path + 'out22'):
+            print Fore.GREEN + 'Sequences files are identical' + Fore.RESET
+        else:
+            print Fore.RED + 'Sequences files are different!' + Fore.RESET
+            success = False
+
+        path = os.path.dirname(filename) + '/'
         if filecmp.cmp(path + 'out3', path + 'out33'):
             print Fore.GREEN + 'Quality files are identical' + Fore.RESET
-            report['success'] = Fore.GREEN + 'Passed' + Fore.RESET
         else:
             print Fore.RED + 'Quality files are different!' + Fore.RESET
+            success = False
+
+        if success == True:
+            report['success'] = Fore.GREEN + 'Passed' + Fore.RESET
+        else:
             report['success'] = Fore.RED + 'Failed' + Fore.RESET
 
 

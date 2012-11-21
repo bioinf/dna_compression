@@ -5,6 +5,7 @@ from progressbar import *
 
 import sys
 import os
+import re
 from struct import pack, calcsize
 
 def analyze(filename, path):
@@ -113,8 +114,8 @@ def analyze(filename, path):
 
 
     pattern = {
-        'txt' : 'ERR001268.[d0] 080821_HWI-EAS301_0002_30ALBAAXX:1:[d1]:[d2]:[d3]/[d4]',
-        'd' : []
+        're' : re.compile('ERR001268.[0-9]* 080821_HWI-EAS301_0002_30ALBAAXX:1:[0-9]*:[0-9]*:[0-9]*/[0-9]*'),
+        'd' : [],
         }
 
 
@@ -245,9 +246,33 @@ def squeeze_seq(path, fileout, num_reads, lng):
 def squeeze_info(path, fileout, num_reads, pattern):
 
     print "Squeezing info..."
+    re = pattern['re']
 
+    widgets = [Bar('#'), ' ', ETA()]
+    pbar = ProgressBar(widgets = widgets, maxval = num_reads).start()
 
     info_bytes = 0
+    summ = 0; count = 0
+    #cache = ''; MaxNcache = calcsize('>Q') * 8 # Max number of bits in cache
+#    f = open(path + 'out1', 'r'); line = f.readline()
+#    while line:
+#        count += 1
+#        pbar.update(count)
+
+#        summ += len(line.replace('\n', '').replace('\r', ''))
+#        cache += seq_to_bits(line.replace('\n', '').replace('\r', ''))
+
+#        while len(cache) > MaxNcache:
+#            fileout.write(pack('>Q', int(cache[:MaxNcache], 2)))
+#            cache = cache[MaxNcache:]
+
+#        line = f.readline()
+
+#    pbar.finish()
+#    f.close()
+
+    # Cache tail processing
+#    summ += len(cache) 
 
     return info_bytes
 
@@ -294,7 +319,6 @@ def compress(filename, parameters):
     # Print results
     head_bytes = 2*(lng * alph_card**2 if cond_huffman else lng * alph_card)
     nucl_bytes = (num_reads * lng) / 4
-    info_bytes = 0
     print "Squeezed to: " + str(qual_bytes + 
                                   nucl_bytes +
                                   head_bytes +

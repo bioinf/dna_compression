@@ -108,7 +108,19 @@ def analyze(filename, path):
                 cond_table[i][c1][c2] = encode(c2, cond_symbols[i][c1])
     pbar.finish()
 
-    return num_reads, lng, alph_card, table, cond_table
+
+    # TBD: analyzing header pattern 
+
+
+    pattern = {
+        'txt' : 'ERR001268.[d0] 080821_HWI-EAS301_0002_30ALBAAXX:1:[d1]:[d2]:[d3]/[d4]',
+        'd' : []
+        }
+
+
+
+
+    return num_reads, lng, alph_card, table, cond_table, pattern
 
 
 
@@ -230,6 +242,15 @@ def squeeze_seq(path, fileout, num_reads, lng):
     return summ / 4 + 1
 
 
+def squeeze_info(path, fileout, num_reads, pattern):
+
+    print "Squeezing info..."
+
+
+    info_bytes = 0
+
+    return info_bytes
+
 
 def compress(filename, parameters):
 
@@ -239,7 +260,9 @@ def compress(filename, parameters):
     path, _ = os.path.dirname(filename) + '/', os.path.basename(filename)
 
     # Analyzing and splitting out to three files: out1, out2, out3
-    num_reads, lng, alph_card, table, cond_table = analyze(filename, path)
+    num_reads, lng, alph_card, table, cond_table, pattern = analyze(filename, path)
+
+    
 
     # Output file
     fileout = open(filename + '.z', 'wb')
@@ -261,17 +284,20 @@ def compress(filename, parameters):
     # Write sequence
     seq_bytes = squeeze_seq(path, fileout, num_reads, lng)
 
+    # Write headers
+    info_bytes = squeeze_info(path, fileout, num_reads, pattern)
+
  
     fileout.write('0' * 8)
     fileout.close()
 
     # Print results
-    header_bytes = 2*(lng * alph_card**2 if cond_huffman else lng * alph_card)
+    head_bytes = 2*(lng * alph_card**2 if cond_huffman else lng * alph_card)
     nucl_bytes = (num_reads * lng) / 4
     info_bytes = 0
     print "Squeezed to: " + str(qual_bytes + 
                                   nucl_bytes +
-                                  header_bytes +
+                                  head_bytes +
                                   info_bytes) + " bytes"
     print "Quality: " + str(qual_bytes) + " bytes"
     print "Sequences: " + str(seq_bytes) + " bytes"

@@ -114,7 +114,7 @@ def analyze(filename, path):
 
 
     pattern = {
-        're' : re.compile('ERR001268.[0-9]* 080821_HWI-EAS301_0002_30ALBAAXX:1:[0-9]*:[0-9]*:[0-9]*/[0-9]*'),
+        're' : re.compile(r"@ERR001268.(\d*) 080821_HWI-EAS301_0002_30ALBAAXX:1:(\d*):(\d*):(\d*)/(\d*)"),
         'd' : [],
         }
 
@@ -246,30 +246,33 @@ def squeeze_seq(path, fileout, num_reads, lng):
 def squeeze_info(path, fileout, num_reads, pattern):
 
     print "Squeezing info..."
-    re = pattern['re']
+    pat = pattern['re']
 
     widgets = [Bar('#'), ' ', ETA()]
     pbar = ProgressBar(widgets = widgets, maxval = num_reads).start()
 
     info_bytes = 0
-    summ = 0; count = 0
+    count = 0
     #cache = ''; MaxNcache = calcsize('>Q') * 8 # Max number of bits in cache
-#    f = open(path + 'out1', 'r'); line = f.readline()
-#    while line:
-#        count += 1
-#        pbar.update(count)
+    f = open(path + 'out1', 'r'); line = f.readline()
+    while line:
+        count += 1
+        pbar.update(count)
 
-#        summ += len(line.replace('\n', '').replace('\r', ''))
+        m = pat.match(line)
+        #print m.groups()
+
+        info_bytes += 4
 #        cache += seq_to_bits(line.replace('\n', '').replace('\r', ''))
 
 #        while len(cache) > MaxNcache:
 #            fileout.write(pack('>Q', int(cache[:MaxNcache], 2)))
 #            cache = cache[MaxNcache:]
 
-#        line = f.readline()
+        line = f.readline()
 
-#    pbar.finish()
-#    f.close()
+    pbar.finish()
+    f.close()
 
     # Cache tail processing
 #    summ += len(cache) 
@@ -280,7 +283,8 @@ def squeeze_info(path, fileout, num_reads, pattern):
 def compress(filename, parameters):
 
     print "Compressing: " + filename
-    print "File size: " + str(os.path.getsize(filename)) + " bytes"
+    filesize = os.path.getsize(filename)
+    print "File size: " + str(filesize) + " bytes"
 
     path, _ = os.path.dirname(filename) + '/', os.path.basename(filename)
 
@@ -317,14 +321,16 @@ def compress(filename, parameters):
     fileout.close()
 
     # Print results
-    head_bytes = 2*(lng * alph_card**2 if cond_huffman else lng * alph_card)
+    tabl_bytes = 2*(lng * alph_card**2 if cond_huffman else lng * alph_card)
     nucl_bytes = (num_reads * lng) / 4
-    print "Squeezed to: " + str(qual_bytes + 
-                                  nucl_bytes +
-                                  head_bytes +
-                                  info_bytes) + " bytes"
-    print "Quality: " + str(qual_bytes) + " bytes"
-    print "Sequences: " + str(seq_bytes) + " bytes"
+    print "Squeezed from " + str(filesize) + " bytes to " + str(qual_bytes +
+                                nucl_bytes +
+                                tabl_bytes +
+                                info_bytes) + " bytes"
+    print "Quality: "   + str(qual_bytes) + " bytes"
+    print "Sequences: " + str(nucl_bytes) + " bytes"
+    print "Tables: " + str(tabl_bytes)  + " bytes"
+    print "Headers info: " + str(info_bytes) + " bytes"
     print "Caution: reads info lost!"
 
 

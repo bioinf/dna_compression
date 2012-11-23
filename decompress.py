@@ -207,6 +207,35 @@ def desqueeze_seq(path, filein, num_reads, lng, rest):
 
 
 
+def desqueeze_info(path, filein, num_reads):
+
+    print "Desqueezing info..."
+
+    widgets = [Bar('#'), ' ', ETA()]
+    pbar = ProgressBar(widgets = widgets, maxval = num_reads).start()
+
+    count = 0
+    f = open(path + 'out11', 'w'); 
+    while count < num_reads:
+        count += 1
+        pbar.update(count)
+
+        m0 = unpack('I', filein.read(4))[0]
+        m1 = unpack('B', filein.read(1))[0]
+        m2 = unpack('H', filein.read(2))[0]
+        m3 = unpack('H', filein.read(2))[0]
+        m4 = unpack('B', filein.read(1))[0]
+
+        f.write("@ERR001268." + str(m0) + " 080821_HWI-EAS301_0002_30ALBAAXX:1:" + 
+                str(m1) + ":" + str(m2) + ":" + str(m3) + "/" + str(m4) + "\n")
+
+
+    pbar.finish()
+    f.close()
+
+    return
+
+
 def decompress(filename):
 
     print "Decompressing: " + filename
@@ -224,6 +253,9 @@ def decompress(filename):
     num_reads = unpack('L', filein.read(calcsize('L')))[0]
     lng = unpack('H', filein.read(2))[0]
 
+    # Read info headers
+    desqueeze_info(path, filein, num_reads)
+     
     # Read tables
     table, cond_table = read_tables(filein, lng)
 

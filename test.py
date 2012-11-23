@@ -64,6 +64,13 @@ for filename in open('test.lst').readlines():
             print Fore.RED + 'Quality files are different!' + Fore.RESET
             success = False
 
+        path = os.path.dirname(filename) + '/'
+        if filecmp.cmp(path + 'out1', path + 'out11'):
+            print Fore.GREEN + 'Info files are identical' + Fore.RESET
+        else:
+            print Fore.RED + 'Info files are different!' + Fore.RESET
+            success = Fals
+
         if success == True:
             report['success'] = Fore.GREEN + 'Passed' + Fore.RESET
         else:

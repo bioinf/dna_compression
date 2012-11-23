@@ -259,8 +259,13 @@ def squeeze_info(path, fileout, num_reads, pattern):
         count += 1
         pbar.update(count)
 
-        m = pat.match(line)
-        #print m.groups()
+        m = pat.match(line).groups()
+
+        fileout.write(pack('I', int(m[0])))
+        fileout.write(pack('B', int(m[1])))
+        fileout.write(pack('H', int(m[2])))
+        fileout.write(pack('H', int(m[3])))
+        fileout.write(pack('B', int(m[4])))
 
         info_bytes += 4
 #        cache += seq_to_bits(line.replace('\n', '').replace('\r', ''))
@@ -303,6 +308,9 @@ def compress(filename, parameters):
     fileout.write(pack('H', lng))
 
 
+    # Write headers
+    info_bytes = squeeze_info(path, fileout, num_reads, pattern)
+
     # Write Huffman tables to file
     write_tables(fileout, lng, table, cond_table)
 
@@ -313,8 +321,6 @@ def compress(filename, parameters):
     # Write sequence
     seq_bytes = squeeze_seq(path, fileout, num_reads, lng)
 
-    # Write headers
-    info_bytes = squeeze_info(path, fileout, num_reads, pattern)
 
  
     fileout.write('0' * 8)

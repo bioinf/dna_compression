@@ -45,7 +45,7 @@ for filename in open('test.lst').readlines():
         print '-' * 60
 
         # Decompress
-        decompress(filename + '.z')
+        decompress(filename + '.z', filename + '.new')
         report['decomp_time'] = '%.2f' % (time() - start_time) + 's'
 
 

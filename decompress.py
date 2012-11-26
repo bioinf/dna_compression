@@ -236,15 +236,41 @@ def desqueeze_info(path, filein, num_reads):
     return
 
 
-def decompress(filename):
+def assemble(path, filename, num_reads):
 
-    print "Decompressing: " + filename
-    print "File size: " + str(os.path.getsize(filename)) + " bytes"
+    f1 = open(path + 'out11')
+    f2 = open(path + 'out22')
+    f3 = open(path + 'out33')
 
-    path, filename = os.path.dirname(filename) + '/', os.path.basename(filename)
+    fileout = open(path + filename, 'w')
+    
+    
+    for i in range(num_reads):
+        fileout.write(f1.readline())
+        fileout.write(f2.readline()[:-1])
+        fileout.write('+\n')
+        fileout.write(f3.readline()[:-1])
+
+    f1.close()
+    f2.close()
+    f3.close()
+
+    fileout.close()
+    
+
+    return
+
+
+# Decompressing: from filename1 to filename2 
+def decompress(filename1, filename2):
+
+    print "Decompressing: " + filename1
+    print "File size: " + str(os.path.getsize(filename1)) + " bytes"
+
+    path, filename1 = os.path.dirname(filename1) + '/', os.path.basename(filename1)
 
     # Input file
-    filein = open(path + filename, 'rb')
+    filein = open(path + filename1, 'rb')
 
     
 
@@ -266,6 +292,9 @@ def decompress(filename):
     desqueeze_seq(path, filein, num_reads, lng, rest)
 
     filein.close()
+
+    # Assemble out[11-33]
+    assemble(path, filename2, num_reads)
 
 
 if __name__ == '__main__':

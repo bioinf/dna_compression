@@ -326,6 +326,10 @@ def compress(filename, parameters):
     fileout.write('0' * 8)
     fileout.close()
 
+    
+    # Delete temporary out[1-3] files
+
+
     # Print results
     tabl_bytes = 2*(lng * alph_card**2 if cond_huffman else lng * alph_card)
     nucl_bytes = (num_reads * lng) / 4

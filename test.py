@@ -49,27 +49,35 @@ for filename in open('test.lst').readlines():
         report['decomp_time'] = '%.2f' % (time() - start_time) + 's'
 
 
-        path = os.path.dirname(filename) + '/'
 	success = True
+
+        path = os.path.dirname(filename) + '/'
+
         if filecmp.cmp(path + 'out2', path + 'out22'):
             print Fore.GREEN + 'Sequences files are identical' + Fore.RESET
         else:
             print Fore.RED + 'Sequences files are different!' + Fore.RESET
             success = False
 
-        path = os.path.dirname(filename) + '/'
         if filecmp.cmp(path + 'out3', path + 'out33'):
             print Fore.GREEN + 'Quality files are identical' + Fore.RESET
         else:
             print Fore.RED + 'Quality files are different!' + Fore.RESET
             success = False
 
-        path = os.path.dirname(filename) + '/'
         if filecmp.cmp(path + 'out1', path + 'out11'):
             print Fore.GREEN + 'Info files are identical' + Fore.RESET
         else:
             print Fore.RED + 'Info files are different!' + Fore.RESET
             success = Fals
+
+
+        if filecmp.cmp(path + filename, path + filename + '.new'):
+            print Fore.GREEN + 'Files are identical' + Fore.RESET
+        else:
+            print Fore.RED + 'Files are different!' + Fore.RESET
+            success = Fals
+
 
         if success == True:
             report['success'] = Fore.GREEN + 'Passed' + Fore.RESET

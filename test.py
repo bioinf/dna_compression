@@ -72,7 +72,7 @@ for filename in open('test.lst').readlines():
             success = Fals
 
 
-        if filecmp.cmp(path + filename, path + filename + '.new'):
+        if filecmp.cmp(filename, filename + '.new'):
             print Fore.GREEN + 'Files are identical' + Fore.RESET
         else:
             print Fore.RED + 'Files are different!' + Fore.RESET

@@ -112,12 +112,22 @@ def analyze(filename, path):
 
     # TBD: analyzing header pattern 
 
+    out1 = open(path + 'out1')
 
+    line = out1.readline()
+    pat = line
+    while line:
+
+        
+        line = out1.readline()
+
+    out1.close()
+
+    pat = "@ERR001268.(\d*) 080821_HWI-EAS301_0002_30ALBAAXX:1:(\d*):(\d*):(\d*)/(\d*)");
     pattern = {
-        're' : re.compile(r"@ERR001268.(\d*) 080821_HWI-EAS301_0002_30ALBAAXX:1:(\d*):(\d*):(\d*)/(\d*)"),
+        're' : re.compile(pat);
         'd' : [],
         }
-
 
 
 

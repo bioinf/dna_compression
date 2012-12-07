@@ -312,15 +312,8 @@ def squeeze_info(path, fileout, num_reads, pattern):
         m = pat.match(line).groups()
 
 
-        #for i in range(len(d)):
-        #    fileout.write(pack(d[i], int(m[i])))
-
-        fileout.write(pack('I', int(m[0])))
-        fileout.write(pack('B', int(m[1])))
-        fileout.write(pack('H', int(m[2])))
-        fileout.write(pack('H', int(m[3])))
-        fileout.write(pack('B', int(m[4])))
-
+        for i in range(len(d)):
+            fileout.write(pack(d[i], int(m[i])))
 
         info_bytes += 4
 #        cache += seq_to_bits(line.replace('\n', '').replace('\r', ''))

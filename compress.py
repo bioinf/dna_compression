@@ -110,7 +110,7 @@ def analyze(filename, path):
     pbar.finish()
 
 
-    # TBD: analyzing header pattern 
+    # Analyzing header pattern 
     print "Pattern extraction..."
 
     def get_min_common_pattern(pat, line):
@@ -187,8 +187,6 @@ def analyze(filename, path):
             else:
                 d += 'I'
             
-    #pat = "@ERR001268.(\d*) 080821_HWI-EAS301_0002_30ALBAAXX:1:(\d*):(\d*):(\d*)/(\d*)\n";
-    #d = 'IBHHB'
     print "Pattern used: ", pat,
     print "Integer types used: ", d
     pattern = {
@@ -343,7 +341,7 @@ def squeeze_info(path, fileout, num_reads, pattern):
         for i in range(len(d)):
             fileout.write(pack(d[i], int(m[i])))
 
-        info_bytes += 4
+        #info_bytes += 4
 #        cache += seq_to_bits(line.replace('\n', '').replace('\r', ''))
 
 #        while len(cache) > MaxNcache:
@@ -358,6 +356,7 @@ def squeeze_info(path, fileout, num_reads, pattern):
     # Cache tail processing
 #    summ += len(cache) 
 
+    info_bytes = num_reads * sum(map(calcsize, d))
     return info_bytes
 
 
@@ -367,12 +366,10 @@ def compress(filename, parameters):
     filesize = os.path.getsize(filename)
     print "File size: " + str(filesize) + " bytes"
 
-    path, _ = os.path.dirname(filename) + '/', os.path.basename(filename)
+    path = os.path.dirname(filename) + '/'
 
     # Analyzing and splitting out to three files: out1, out2, out3
     num_reads, lng, alph_card, table, cond_table, pattern = analyze(filename, path)
-
-    
 
     # Output file
     fileout = open(filename + '.z', 'wb')
@@ -383,9 +380,10 @@ def compress(filename, parameters):
     fileout.write(pack('L', num_reads))
     fileout.write(pack('H', lng))
 
-    fileout.write(pack('B', len(pattern['pat']))); fileout.write(pattern['pat'])
+    fileout.write(pack('B', len(pattern['pat']))); 
+    fileout.write(pattern['pat'])
     fileout.write(pack('B', len(pattern['d']))); 
-    for d in pattern['d']: fileout.write(d)
+    fileout.write(pattern['d'])
 
     # Write headers
     info_bytes = squeeze_info(path, fileout, num_reads, pattern)
@@ -411,13 +409,12 @@ def compress(filename, parameters):
 
     # Print results
     tabl_bytes = 2*(lng * alph_card**2 if cond_huffman else lng * alph_card)
-    nucl_bytes = (num_reads * lng) / 4
     print "Squeezed from " + str(filesize) + " bytes to " + str(qual_bytes +
-                                nucl_bytes +
+                                seq_bytes +
                                 tabl_bytes +
                                 info_bytes) + " bytes"
     print "Quality: "   + str(qual_bytes) + " bytes"
-    print "Sequences: " + str(nucl_bytes) + " bytes"
+    print "Sequences: " + str(seq_bytes) + " bytes"
     print "Tables: " + str(tabl_bytes)  + " bytes"
     print "Headers info: " + str(info_bytes) + " bytes"
     print "Caution: reads info lost!"

@@ -113,12 +113,18 @@ def analyze(filename, path):
     # TBD: analyzing header pattern 
     print "Pattern extraction..."
 
+    def get_min_common_pattern(pat, line):
+        
+        return pat
+
+
     out1 = open(path + 'out1')
     line = out1.readline()
     pat = line
     while line:
-        
-        
+        patre = re.compile(pat)
+        if not patre.match(line):
+            pat = get_min_common_pattern(pat, line)
         line = out1.readline()
 
     out1.close()

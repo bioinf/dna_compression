@@ -242,7 +242,7 @@ def assemble(path, filename, num_reads):
     f2 = open(path + 'out22')
     f3 = open(path + 'out33')
 
-    fileout = open(path + filename, 'wb')
+    fileout = open(filename, 'wb')
     
     
     for i in range(num_reads):

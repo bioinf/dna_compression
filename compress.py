@@ -123,9 +123,9 @@ def analyze(filename, path):
 
     out1.close()
 
-    pat = "@ERR001268.(\d*) 080821_HWI-EAS301_0002_30ALBAAXX:1:(\d*):(\d*):(\d*)/(\d*)");
+    pat = "@ERR001268.(\d*) 080821_HWI-EAS301_0002_30ALBAAXX:1:(\d*):(\d*):(\d*)/(\d*)";
     pattern = {
-        're' : re.compile(pat);
+        're' : re.compile(pat),
         'd' : [],
         }
 

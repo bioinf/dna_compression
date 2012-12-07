@@ -1,16 +1,19 @@
-1. Full compress/decompress
-2. Flexible length
-3. No tmp files
-4. Use alignment
-5. Use pair alignment
-6. Lossy (quality, identifiers, order)
-7. Error processing, comments, general refactoring
-
-Testing: 
+TODO:
+# Flexible length
+# Error processing, comments, general refactoring
+# Testing: 
  - comparing (bzip, sqz, ...)
  - statistics
  - golden files
 
-Research:
+Later:
+# No tmp files
+# Use alignment
+# Use pair alignment
+# Lossy (quality, identifiers, order)
+# Research:
  - hidden MM?
  - linear representation
+
+Done:
+# Full compress/decompress

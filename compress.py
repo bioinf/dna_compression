@@ -153,17 +153,44 @@ def analyze(filename, path):
     out1 = open(path + 'out1')
     line = out1.readline()
     pat = line
+    patre = re.compile(pat)
     while line:
-        patre = re.compile(pat)
         if not patre.match(line):
             pat = get_min_common_pattern(pat, line)
+            patre = re.compile(pat)
         line = out1.readline()
-
     out1.close()
     
-    d = 'I' * pat.count('(\d*)')
+    dnum =  pat.count('(\d*)')
+    mins = [100000] * dnum
+    maxs = [1] * dnum
+
+    out1 = open(path + 'out1')
+    line = out1.readline()
+    while line:
+        m = patre.match(line).groups()
+        for i in range(dnum):
+            if mins[i] > int(m[i]): mins[i] = int(m[i])
+            if maxs[i] < int(m[i]): maxs[i] = int(m[i])
+            
+        line = out1.readline()
+    out1.close()
+
+    bits = [len(bin(r[1] - r[0])) - 2 for r in zip(mins, maxs)]
+    d = ''
+    for bit in bits: 
+        if bit <= 8:
+            d += 'B'
+        else:
+            if bit <= 16:
+                d += 'H'
+            else:
+                d += 'I'
+            
     #pat = "@ERR001268.(\d*) 080821_HWI-EAS301_0002_30ALBAAXX:1:(\d*):(\d*):(\d*)/(\d*)\n";
-    #d = ['IBHHB']
+    #d = 'IBHHB'
+    print "Pattern used: ", pat,
+    print "Integer types used: ", d
     pattern = {
         're' : re.compile(pat),
         'd' : d, 

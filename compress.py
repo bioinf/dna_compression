@@ -114,7 +114,34 @@ def analyze(filename, path):
     print "Pattern extraction..."
 
     def get_min_common_pattern(pat, line):
-        
+        ipat = 0; iline = 0
+        lngpat = len(pat); lngline = len(line)
+        while ipat < lngpat and iline < lngline:
+            if pat[ipat] == line[iline]:
+                ipat += 1; iline += 1
+                continue
+
+            if ipat + 5 <= lngpat and pat[ipat:ipat+5] == '(\d*)':
+                while iline < lngline and line[iline].isdigit(): 
+                    iline += 1
+                ipat += 5
+                continue
+            
+            if pat[ipat].isdigit() and line[iline].isdigit():
+                ipat2 = ipat; iline2 = iline
+                while ipat2 < lngpat and pat[ipat2].isdigit(): 
+                    ipat2 += 1
+                while iline2 < lngline and line[iline2].isdigit(): 
+                    iline2 += 1
+                
+                pat = pat[:ipat] + '(\d*)' + pat[ipat2:]
+                ipat += 5
+                iline = iline2
+                lngpat = len(pat)
+                continue
+
+            else: error
+
         return pat
 
 

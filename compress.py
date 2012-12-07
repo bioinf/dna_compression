@@ -164,7 +164,8 @@ def analyze(filename, path):
     pat = "@ERR001268.(\d*) 080821_HWI-EAS301_0002_30ALBAAXX:1:(\d*):(\d*):(\d*)/(\d*)";
     pattern = {
         're' : re.compile(pat),
-        'd' : ['I'] * pat.count('(\d*)'),
+        #'d' : ['I'] * pat.count('(\d*)'),
+        'd' : ['I', 'B', 'H', 'H', 'B'],
         'pat' : pat,
         }
     
@@ -360,7 +361,10 @@ def compress(filename, parameters):
     fileout.write(pack('B', cond_huffman))
     fileout.write(pack('L', num_reads))
     fileout.write(pack('H', lng))
+
     fileout.write(pack('B', len(pattern['pat']))); fileout.write(pattern['pat'])
+    fileout.write(pack('B', len(pattern['d']))); 
+    for d in pattern['d']: fileout.write(d)
 
     # Write headers
     info_bytes = squeeze_info(path, fileout, num_reads, pattern)

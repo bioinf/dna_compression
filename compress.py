@@ -114,7 +114,6 @@ def analyze(filename, path):
     print "Pattern extraction..."
 
     def get_min_common_pattern(pat, line):
-        print pat, line
         ipat = 0; iline = 0
         lngpat = len(pat); lngline = len(line)
         while ipat < lngpat and iline < lngline:
@@ -162,15 +161,13 @@ def analyze(filename, path):
 
     out1.close()
     
-    print pat
     pat = "@ERR001268.(\d*) 080821_HWI-EAS301_0002_30ALBAAXX:1:(\d*):(\d*):(\d*)/(\d*)";
-    print pat
     pattern = {
         're' : re.compile(pat),
-        'd' : [],
+        'd' : ['I'] * pat.count('(\d*)'),
+        'pat' : pat,
         }
-
-
+    
 
     return num_reads, lng, alph_card, table, cond_table, pattern
 
@@ -298,6 +295,7 @@ def squeeze_info(path, fileout, num_reads, pattern):
 
     print "Squeezing info..."
     pat = pattern['re']
+    d = pattern['d']
 
     widgets = [Bar('#'), ' ', ETA()]
     pbar = ProgressBar(widgets = widgets, maxval = num_reads).start()
@@ -312,11 +310,16 @@ def squeeze_info(path, fileout, num_reads, pattern):
 
         m = pat.match(line).groups()
 
+
+        #for i in range(len(d)):
+        #    fileout.write(pack(d[i], int(m[i])))
+
         fileout.write(pack('I', int(m[0])))
         fileout.write(pack('B', int(m[1])))
         fileout.write(pack('H', int(m[2])))
         fileout.write(pack('H', int(m[3])))
         fileout.write(pack('B', int(m[4])))
+
 
         info_bytes += 4
 #        cache += seq_to_bits(line.replace('\n', '').replace('\r', ''))
@@ -357,7 +360,7 @@ def compress(filename, parameters):
     fileout.write(pack('B', cond_huffman))
     fileout.write(pack('L', num_reads))
     fileout.write(pack('H', lng))
-
+    fileout.write(pack('B', len(pattern['pat']))); fileout.write(pattern['pat'])
 
     # Write headers
     info_bytes = squeeze_info(path, fileout, num_reads, pattern)

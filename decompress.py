@@ -207,7 +207,7 @@ def desqueeze_seq(path, filein, num_reads, lng, rest):
 
 
 
-def desqueeze_info(path, filein, num_reads):
+def desqueeze_info(path, filein, num_reads, pattern):
 
     print "Desqueezing info..."
 
@@ -278,9 +278,10 @@ def decompress(filename1, filename2):
     cond_huffman = bool(unpack('B'*1, filein.read(1))[0])
     num_reads = unpack('L', filein.read(calcsize('L')))[0]
     lng = unpack('H', filein.read(2))[0]
+    pattern = filein.read(unpack('B', filein.read(1))[0])
 
     # Read info headers
-    desqueeze_info(path, filein, num_reads)
+    desqueeze_info(path, filein, num_reads, pattern)
      
     # Read tables
     table, cond_table = read_tables(filein, lng)

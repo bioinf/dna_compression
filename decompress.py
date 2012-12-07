@@ -230,7 +230,6 @@ def desqueeze_info(path, filein, num_reads, pattern):
             c = d[i]
             out += str(unpack(c, filein.read(calcsize(c)))[0]) + pats[i+1]
 
-        out += '\n'
         f.write(out)
 
 

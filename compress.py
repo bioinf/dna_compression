@@ -114,6 +114,7 @@ def analyze(filename, path):
     print "Pattern extraction..."
 
     def get_min_common_pattern(pat, line):
+        print pat, line
         ipat = 0; iline = 0
         lngpat = len(pat); lngline = len(line)
         while ipat < lngpat and iline < lngline:
@@ -128,6 +129,11 @@ def analyze(filename, path):
                 continue
             
             if pat[ipat].isdigit() and line[iline].isdigit():
+                while pat[ipat].isdigit(): ipat -= 1
+                ipat += 1
+                while line[iline].isdigit(): iline -= 1
+                iline += 1
+
                 ipat2 = ipat; iline2 = iline
                 while ipat2 < lngpat and pat[ipat2].isdigit(): 
                     ipat2 += 1
@@ -155,8 +161,10 @@ def analyze(filename, path):
         line = out1.readline()
 
     out1.close()
-
+    
+    print pat
     pat = "@ERR001268.(\d*) 080821_HWI-EAS301_0002_30ALBAAXX:1:(\d*):(\d*):(\d*)/(\d*)";
+    print pat
     pattern = {
         're' : re.compile(pat),
         'd' : [],

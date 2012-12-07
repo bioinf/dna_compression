@@ -111,13 +111,13 @@ def analyze(filename, path):
 
 
     # TBD: analyzing header pattern 
+    print "Pattern extraction..."
 
     out1 = open(path + 'out1')
-
     line = out1.readline()
     pat = line
     while line:
-
+        
         
         line = out1.readline()
 

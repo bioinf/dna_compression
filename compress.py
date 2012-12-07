@@ -146,7 +146,7 @@ def analyze(filename, path):
                 continue
 
             else: error
-
+            
         return pat
 
 
@@ -161,11 +161,12 @@ def analyze(filename, path):
 
     out1.close()
     
-    pat = "@ERR001268.(\d*) 080821_HWI-EAS301_0002_30ALBAAXX:1:(\d*):(\d*):(\d*)/(\d*)\n";
+    d = 'I' * pat.count('(\d*)')
+    #pat = "@ERR001268.(\d*) 080821_HWI-EAS301_0002_30ALBAAXX:1:(\d*):(\d*):(\d*)/(\d*)\n";
+    #d = ['IBHHB']
     pattern = {
         're' : re.compile(pat),
-        #'d' : ['I'] * pat.count('(\d*)'),
-        'd' : ['I', 'B', 'H', 'H', 'B'],
+        'd' : d, 
         'pat' : pat,
         }
     

@@ -111,7 +111,7 @@ def analyze(filename, path):
 
 
     # Analyzing header pattern 
-    print "Pattern extraction..."
+    print "Pattern inference..."
 
     def get_min_common_pattern(pat, line):
         ipat = 0; iline = 0
@@ -219,8 +219,10 @@ def write_tables(out, lng, table, cond_table):
                 out.write(c)
                 out.write(pack('B', len(cond_table[i][prev][c])))
                 if len(cond_table[i][prev][c]) > 0:
-                    out.write(pack('H', int('0' + cond_table[i][prev][c], 2)))
-
+                    if len(cond_table[i][prev][c]) <= 16:
+                        out.write(pack('H', int('0' + cond_table[i][prev][c], 2)))
+                    else:
+                        out.write(pack('I', int('0' + cond_table[i][prev][c], 2)))
 
 
 def squeeze_quality(path, fileout, num_reads, lng, table, cond_table, cond_huffman):

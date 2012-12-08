@@ -32,7 +32,10 @@ def read_tables(filein, lng):
                 c = filein.read(1)
                 lenc = unpack('B', filein.read(1))[0]
                 if lenc > 0:
-                    cond_table[i][prev][c] = bin(unpack('H', filein.read(2))[0])[2:].zfill(lenc)
+                    if lenc <= 16:
+                        cond_table[i][prev][c] = bin(unpack('H', filein.read(2))[0])[2:].zfill(lenc)
+                    else:
+                        cond_table[i][prev][c] = bin(unpack('I', filein.read(4))[0])[2:].zfill(lenc)
                 else:
                     cond_table[i][prev][c] = ''
                 

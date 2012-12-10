@@ -312,7 +312,7 @@ if __name__ == '__main__':
         print "Using: " + sys.argv[0] + " file.fastq.z"
         exit()
 
-    filename = sys.argv[1]
+    filename1 = sys.argv[1]
+    filename2 = sys.argv[2]
 
-
-    decompress(filename)
+    decompress(filename1, filename2)

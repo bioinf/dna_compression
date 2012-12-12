@@ -220,6 +220,10 @@ def desqueeze_info(path, filein, num_reads, pattern):
     d = pattern['d']
     pat = pattern['pat']
     pats = pat.split('(\d*)')
+    mins = pattern['mins']
+    dmins = pattern['dmins']
+    use_diff = pattern['use_diff']
+    prev = [0] * len(d)
 
     count = 0
     f = open(path + 'out11', 'w'); 
@@ -231,7 +235,13 @@ def desqueeze_info(path, filein, num_reads, pattern):
 
         for i in range(len(d)):
             c = d[i]
-            out += str(unpack(c, filein.read(calcsize(c)))[0]) + pats[i+1]
+            num = unpack(c, filein.read(calcsize(c)))[0]
+            if use_diff[i]:
+                prev[i], num = num + prev[i], num + dmins[i] + prev[i]
+            else:
+                num += mins[i]
+
+            out += str(num) + pats[i+1]
 
         f.write(out)
 
@@ -267,6 +277,26 @@ def assemble(path, filename, num_reads):
     return
 
 
+def read_parameters(filein):
+
+    cond_huffman = bool(unpack('B'*1, filein.read(1))[0])
+    num_reads = unpack('L', filein.read(calcsize('L')))[0]
+    lng = unpack('H', filein.read(2))[0]
+    pat = filein.read(unpack('B', filein.read(1))[0])
+    lend = unpack('B', filein.read(1))[0]
+    d = ''; mins = []; dmins = []; use_diff = []
+    for i in range(lend):
+        d += filein.read(1) #fileout.write(pattern['d'][i])
+        mins.append(unpack('I', filein.read(4))[0])
+        dmins.append(unpack('i', filein.read(4))[0])
+        use_diff.append(bool(unpack('B', filein.read(1))[0]))
+
+    pattern = {'d' : d, 'pat' : pat, 'mins' : mins, 
+               'dmins' : dmins, 'use_diff' : use_diff} 
+
+    return cond_huffman, num_reads, lng, pattern
+
+
 # Decompressing: from filename1 to filename2 
 def decompress(filename1, filename2):
 
@@ -281,12 +311,7 @@ def decompress(filename1, filename2):
     
 
     # Read parameters
-    cond_huffman = bool(unpack('B'*1, filein.read(1))[0])
-    num_reads = unpack('L', filein.read(calcsize('L')))[0]
-    lng = unpack('H', filein.read(2))[0]
-    pat = filein.read(unpack('B', filein.read(1))[0])
-    d = filein.read(unpack('B', filein.read(1))[0])
-    pattern = {'d' : d, 'pat' : pat} 
+    cond_huffman, num_reads, lng, pattern = read_parameters(filein)
 
     # Read info headers
     desqueeze_info(path, filein, num_reads, pattern)

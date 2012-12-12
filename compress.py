@@ -164,14 +164,23 @@ def analyze(filename, path):
     dnum =  pat.count('(\d*)')
     mins = [100000] * dnum
     maxs = [1] * dnum
+    prevs = [0] * (dnum + 1)
+    dmins = [100000] * dnum
+    dmaxs = [0] * dnum
 
     out1 = open(path + 'out1')
     line = out1.readline()
     while line:
-        m = patre.match(line).groups()
+        m = map(int, patre.match(line).groups())
         for i in range(dnum):
-            if mins[i] > int(m[i]): mins[i] = int(m[i])
-            if maxs[i] < int(m[i]): maxs[i] = int(m[i])
+            if mins[i] > m[i]: mins[i] = m[i]
+            if maxs[i] < m[i]: maxs[i] = m[i]
+            
+            diff = m[i] - prevs[i]
+            prevs[i] = m[i]
+
+            if dmins[i] > diff: dmins[i] = diff
+            if dmaxs[i] < diff: dmaxs[i] = diff
             
         line = out1.readline()
     out1.close()
@@ -181,20 +190,28 @@ def analyze(filename, path):
 
 
     bits = [len(bin(r[1] - r[0])) - 2 for r in zip(mins, maxs)]
+    dbits = [len(bin(r[1] - r[0])) - 2 for r in zip(dmins, dmaxs)]
     d = ''
-    for bit in bits: 
+    use_diff = [False] * dnum
+    for i in range(len(bits)):
+        bit = bits[i]
+        if dbits[i] < bits[i]:
+            use_diff[i] = True
+            bit = dbits[i]
         if bit <= 8: d += 'B'
         else:
             if bit <= 16: d += 'H'
             else: d += 'I'
 
+
     print "Integer types used: ", d
     pattern = {
         're' : re.compile(pat),
-        'd' : d, 
         'pat' : pat,
+        'd' : d, 
         'mins' : mins,
-        'bits' : bits,
+        'dmins' : dmins,
+        'use_diff' : use_diff,
         }
     
 
@@ -325,8 +342,12 @@ def squeeze_seq(path, fileout, num_reads, lng):
 def squeeze_info(path, fileout, num_reads, pattern):
 
     print "Squeezing info..."
+
     pat = pattern['re']
     d = pattern['d']
+    use_diff = pattern['use_diff']
+    mins = pattern['mins']
+    dmins = pattern['dmins']
 
     widgets = [Bar('#'), ' ', ETA()]
     pbar = ProgressBar(widgets = widgets, maxval = num_reads).start()
@@ -335,15 +356,20 @@ def squeeze_info(path, fileout, num_reads, pattern):
     count = 0
     #cache = ''; MaxNcache = calcsize('>Q') * 8 # Max number of bits in cache
     f = open(path + 'out1', 'r'); line = f.readline()
+    prev = [0] * len(d)
     while line:
         count += 1
         pbar.update(count)
 
-        m = pat.match(line).groups()
-
+        m = map(int, pat.match(line).groups())
 
         for i in range(len(d)):
-            fileout.write(pack(d[i], int(m[i])))
+            if use_diff[i]:
+                m[i] -= dmins[i]
+                fileout.write(pack(d[i], m[i] - prev[i]))
+                prev[i] = m[i] 
+            else:
+                fileout.write(pack(d[i], m[i] - mins[i]))
 
         #info_bytes += 4
 #        cache += seq_to_bits(line.replace('\n', '').replace('\r', ''))
@@ -364,6 +390,21 @@ def squeeze_info(path, fileout, num_reads, pattern):
     return info_bytes
 
 
+def write_parameters(fileout, cond_huffman, num_reads, lng, pattern):
+    fileout.write(pack('B', cond_huffman))
+    fileout.write(pack('L', num_reads))
+    fileout.write(pack('H', lng))
+    fileout.write(pack('B', len(pattern['pat']))); 
+    fileout.write(pattern['pat'])
+    fileout.write(pack('B', len(pattern['d']))); 
+    for i in range(len(pattern['d'])):
+        fileout.write(pattern['d'][i])
+        fileout.write(pack('I', pattern['mins'][i]))
+        fileout.write(pack('i', pattern['dmins'][i]))
+        fileout.write(pack('B', pattern['use_diff'][i]))
+    return
+
+
 def compress(filename, parameters):
 
     print "Compressing: " + filename
@@ -372,6 +413,8 @@ def compress(filename, parameters):
 
     path = os.path.dirname(filename) + '/'
 
+    cond_huffman = parameters[0]
+
     # Analyzing and splitting out to three files: out1, out2, out3
     num_reads, lng, alph_card, table, cond_table, pattern = analyze(filename, path)
 
@@ -379,15 +422,7 @@ def compress(filename, parameters):
     fileout = open(filename + '.z', 'wb')
 
     # Write parameters to file
-    cond_huffman = parameters[0]
-    fileout.write(pack('B', cond_huffman))
-    fileout.write(pack('L', num_reads))
-    fileout.write(pack('H', lng))
-
-    fileout.write(pack('B', len(pattern['pat']))); 
-    fileout.write(pattern['pat'])
-    fileout.write(pack('B', len(pattern['d']))); 
-    fileout.write(pattern['d'])
+    write_parameters(fileout, cond_huffman, num_reads, lng, pattern)
 
     # Write headers
     info_bytes = squeeze_info(path, fileout, num_reads, pattern)

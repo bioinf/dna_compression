@@ -176,23 +176,25 @@ def analyze(filename, path):
         line = out1.readline()
     out1.close()
 
+            
+    print "Pattern used: ", pat,
+
+
     bits = [len(bin(r[1] - r[0])) - 2 for r in zip(mins, maxs)]
     d = ''
     for bit in bits: 
-        if bit <= 8:
-            d += 'B'
+        if bit <= 8: d += 'B'
         else:
-            if bit <= 16:
-                d += 'H'
-            else:
-                d += 'I'
-            
-    print "Pattern used: ", pat,
+            if bit <= 16: d += 'H'
+            else: d += 'I'
+
     print "Integer types used: ", d
     pattern = {
         're' : re.compile(pat),
         'd' : d, 
         'pat' : pat,
+        'mins' : mins,
+        'bits' : bits,
         }
     
 
@@ -419,7 +421,6 @@ def compress(filename, parameters):
     print "Sequences: " + str(seq_bytes) + " bytes"
     print "Tables: " + str(tabl_bytes)  + " bytes"
     print "Headers info: " + str(info_bytes) + " bytes"
-    print "Caution: reads info lost!"
 
 
 
